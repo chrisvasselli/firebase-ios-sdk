@@ -17,6 +17,7 @@
 #ifndef FIRESTORE_CORE_SRC_UTIL_LOG_H_
 #define FIRESTORE_CORE_SRC_UTIL_LOG_H_
 
+#include <sstream>
 #include <string>
 
 #include "Firestore/core/src/util/string_format.h"
@@ -95,6 +96,27 @@ void LogSetLevel(LogLevel level);
 
 // Log a message at the given level.
 void LogMessage(LogLevel log_level, const std::string& message);
+
+namespace detail {
+
+std::string FormattedTimestamp();
+
+void UnityIssue1154TestLog0(std::ostringstream& ss);
+
+template <typename T, typename... U>
+void UnityIssue1154TestLog0(std::ostringstream& ss, T message, U... rest) {
+  ss << message;
+  UnityIssue1154TestLog0(ss, rest...);
+}
+
+}
+
+template <typename... T>
+void UnityIssue1154TestLog(T... messages) {
+  std::ostringstream ss;
+  ss << "<<<<< " << detail::FormattedTimestamp() << " == ";
+  detail::UnityIssue1154TestLog0(ss, messages...);
+}
 
 }  // namespace util
 }  // namespace firestore

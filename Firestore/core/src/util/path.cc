@@ -17,8 +17,13 @@
 #include "Firestore/core/src/util/path.h"
 
 #include <algorithm>
+#include <cctype>
+#include <chrono>
+#include <ctime>
+#include <string>
 
 #include "Firestore/core/src/util/hard_assert.h"
+#include "Firestore/core/src/util/log.h"
 #include "Firestore/core/src/util/string_win.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/string_view.h"
@@ -243,6 +248,29 @@ void Path::MutableAppendUtf8Segment(absl::string_view path) {
 bool operator==(const Path& lhs, const Path& rhs) {
   return CanonicalPath(lhs.pathname_) == CanonicalPath(rhs.pathname_);
 }
+
+namespace detail {
+
+std::string FormattedTimestamp() {
+  auto timestamp = std::chrono::system_clock::now();
+  std::time_t ctime_timestamp = std::chrono::system_clock::to_time_t(timestamp);
+  std::string formatted_timestamp(std::ctime(&ctime_timestamp));
+  while (formatted_timestamp.size() > 0) {
+    auto last_char = formatted_timestamp[formatted_timestamp.size() - 1];
+    if (!std::isspace(last_char)) {
+      break;
+    }
+    formatted_timestamp.pop_back();
+  }
+  return formatted_timestamp;
+}
+
+void UnityIssue1154TestLog0(std::ostringstream& ss) {
+  LogMessage(LogLevel::kLogLevelNotice, ss.str());
+}
+
+}
+
 
 }  // namespace util
 }  // namespace firestore
