@@ -124,7 +124,7 @@ static CGFloat LandScapePaddingBetweenImageAndTextColumn = 24;
   // populating values for display elements
 
   self.titleLabel.text = self.modalDisplayMessage.title;
-  self.bodyTextView.text = self.modalDisplayMessage.bodyText;
+  self.bodyTextView.text = [self.modalDisplayMessage.bodyText stringByReplacingOccurrencesOfString:@"<br>" withString:@"\n"];
 
   if (self.modalDisplayMessage.imageData) {
     [self.imageView
@@ -135,10 +135,10 @@ static CGFloat LandScapePaddingBetweenImageAndTextColumn = 24;
     self.imageView.isAccessibilityElement = NO;
   }
 
-  self.messageCardView.backgroundColor = self.modalDisplayMessage.displayBackgroundColor;
+//  self.messageCardView.backgroundColor = self.modalDisplayMessage.displayBackgroundColor;
 
-  self.titleLabel.textColor = self.modalDisplayMessage.textColor;
-  self.bodyTextView.textColor = self.modalDisplayMessage.textColor;
+//  self.titleLabel.textColor = self.modalDisplayMessage.textColor;
+//  self.bodyTextView.textColor = self.modalDisplayMessage.textColor;
   self.bodyTextView.selectable = NO;
 
   if (self.modalDisplayMessage.actionButton.buttonText.length != 0) {
@@ -461,7 +461,7 @@ struct TitleBodyButtonHeightInfo {
   if (self.modalDisplayMessage.campaignInfo.renderAsTestMessage) {
     FIRLogDebug(kFIRLoggerInAppMessagingDisplay, @"I-FID300011",
                 @"Flushing the close button since this is a test message.");
-    [self flashCloseButton:self.closeButton];
+//    [self flashCloseButton:self.closeButton];
   }
 }
 
@@ -486,6 +486,12 @@ struct TitleBodyButtonHeightInfo {
                        // Do nothing
                    }];
 }
+
+- (UIStatusBarStyle)preferredStatusBarStyle
+{
+    return UIStatusBarStyleLightContent;
+}
+
 @end
 
 #endif  // TARGET_OS_IOS
