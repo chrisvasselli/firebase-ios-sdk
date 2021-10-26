@@ -147,7 +147,7 @@ static CGFloat LandScapePaddingBetweenImageAndTextColumn = 24;
     self.actionButton.backgroundColor = self.modalDisplayMessage.actionButton.buttonBackgroundColor;
     [self.actionButton setTitleColor:self.modalDisplayMessage.actionButton.buttonTextColor
                             forState:UIControlStateNormal];
-    self.actionButton.layer.cornerRadius = 4;
+    self.actionButton.layer.cornerRadius = 8;
 
     if (self.modalDisplayMessage.bodyText.length == 0) {
       self.buttonTopToBodyBottomConstraint.constant = 0;

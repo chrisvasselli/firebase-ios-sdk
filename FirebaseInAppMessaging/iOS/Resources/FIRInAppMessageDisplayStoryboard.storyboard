@@ -217,7 +217,7 @@
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                     </textView>
                                 </subviews>
-                                <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                                <color key="backgroundColor" systemColor="secondarySystemBackgroundColor"/>
                                 <accessibility key="accessibilityConfiguration" identifier="message-card-view">
                                     <bool key="isElement" value="NO"/>
                                 </accessibility>
@@ -547,10 +547,10 @@
                                         <exclude reference="7IV-jj-DjU"/>
                                         <exclude reference="RVJ-ts-fU5"/>
                                         <exclude reference="T6F-Mi-UaM"/>
-                                        <exclude reference="dN2-Ih-eEj"/>
-                                        <exclude reference="jgB-Ie-frE"/>
                                         <exclude reference="6oY-Eb-2Mh"/>
                                         <exclude reference="Q0o-hu-ttH"/>
+                                        <exclude reference="dN2-Ih-eEj"/>
+                                        <exclude reference="jgB-Ie-frE"/>
                                     </mask>
                                 </variation>
                                 <variation key="heightClass=compact">
@@ -558,8 +558,8 @@
                                         <include reference="Voc-mp-Yh8"/>
                                         <include reference="4aZ-wP-20V"/>
                                         <include reference="7IV-jj-DjU"/>
-                                        <include reference="dN2-Ih-eEj"/>
                                         <include reference="Q0o-hu-ttH"/>
+                                        <include reference="dN2-Ih-eEj"/>
                                     </mask>
                                 </variation>
                                 <variation key="widthClass=regular">
@@ -567,8 +567,8 @@
                                         <include reference="Voc-mp-Yh8"/>
                                         <include reference="4aZ-wP-20V"/>
                                         <include reference="7IV-jj-DjU"/>
-                                        <include reference="dN2-Ih-eEj"/>
                                         <include reference="Q0o-hu-ttH"/>
+                                        <include reference="dN2-Ih-eEj"/>
                                     </mask>
                                 </variation>
                                 <variation key="heightClass=regular-widthClass=compact">
@@ -576,8 +576,8 @@
                                         <include reference="xX5-sm-qJG"/>
                                         <include reference="RVJ-ts-fU5"/>
                                         <include reference="T6F-Mi-UaM"/>
-                                        <include reference="jgB-Ie-frE"/>
                                         <include reference="6oY-Eb-2Mh"/>
+                                        <include reference="jgB-Ie-frE"/>
                                     </mask>
                                 </variation>
                                 <variation key="heightClass=regular-widthClass=regular">
@@ -630,11 +630,11 @@
         <systemColor name="secondaryLabelColor">
             <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.59999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
+        <systemColor name="secondarySystemBackgroundColor">
+            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
         <systemColor name="separatorColor">
             <color red="0.23529411764705882" green="0.23529411764705882" blue="0.2627450980392157" alpha="0.28999999999999998" colorSpace="custom" customColorSpace="sRGB"/>
-        </systemColor>
-        <systemColor name="systemBackgroundColor">
-            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
     </resources>
 </document>
