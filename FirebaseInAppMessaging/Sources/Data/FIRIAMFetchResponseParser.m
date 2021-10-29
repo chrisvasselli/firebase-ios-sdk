@@ -332,6 +332,17 @@
         return nil;
       }
     }
+      
+    NSDictionary *dataBundle = nil;
+    id dataBundleNode = messageNode[@"dataBundle"];
+    if ([dataBundleNode isKindOfClass:[NSDictionary class]]) {
+      dataBundle = dataBundleNode;
+    }
+
+    title = [self nihongo_overrideForField:@"title" inDataBundle:dataBundle] ?: title;
+    body = [self nihongo_overrideForField:@"body" inDataBundle:dataBundle] ?: body;
+    actionButtonText = [self nihongo_overrideForField:@"actionButtonText" inDataBundle:dataBundle] ?: actionButtonText;
+    secondaryActionButtonText = [self nihongo_overrideForField:@"secondaryActionButtonText" inDataBundle:dataBundle] ?: secondaryActionButtonText;
 
     FIRIAMMessageContentDataWithImageURL *msgData =
         [[FIRIAMMessageContentDataWithImageURL alloc] initWithMessageTitle:title
@@ -349,11 +360,7 @@
                                                messageName:messageName
                                                contentData:msgData
                                            renderingEffect:renderEffect];
-    NSDictionary *dataBundle = nil;
-    id dataBundleNode = messageNode[@"dataBundle"];
-    if ([dataBundleNode isKindOfClass:[NSDictionary class]]) {
-      dataBundle = dataBundleNode;
-    }
+    
     if (isTestMessage) {
       return [[FIRIAMMessageDefinition alloc] initTestMessageWithRenderData:renderData
                                                           experimentPayload:experimentPayload];
@@ -373,6 +380,17 @@
                   messageNode, e);
     return nil;
   }
+}
+
+- (nullable NSString *) nihongo_overrideForField: (NSString*) field inDataBundle: (nullable NSDictionary*) dataBundle
+{
+    if ( dataBundle == nil )
+        return nil;
+    
+    NSString* appLanguage = NSBundle.mainBundle.preferredLocalizations.firstObject;
+    NSString* key = [NSString stringWithFormat:@"%@_%@", field, appLanguage];
+    
+    return (NSString*) dataBundle[key];
 }
 
 - (nullable NSURL *)imageURLFromURLString:(NSString *)string {
