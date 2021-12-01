@@ -8,6 +8,7 @@ on:
     - '.swiftpm/*'
     - 'scripts/build.sh'
     - 'SwiftPMTests/*'
+    - 'SwiftPM-PlatformExclude'
     - 'Gemfile*'
   schedule:
     # Run every day at 12am (PST) - cron uses UTC times
@@ -25,6 +26,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Initialize xcodebuild
       run: scripts/setup_spm_tests.sh
+    - name: Functions Integration Test Server
+      run: FirebaseFunctions/Backend/start.sh synchronous
     - name: iOS Unit Tests
       run: scripts/third_party/travis/retry.sh ./scripts/build.sh Firebase-Package iOS spm
 
@@ -48,7 +51,7 @@ jobs:
     strategy:
       matrix:
         target: [tvOS, macOS, catalyst]
-        # Full set of Firebase-Package tests only run on iOS because of Analytics.
+        # Full set of Firebase-Package tests only run on iOS.
     steps:
     - uses: actions/checkout@v2
     - name: Initialize xcodebuild
