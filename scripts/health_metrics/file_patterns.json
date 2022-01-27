@@ -1,6 +1,7 @@
 [
   {
     "sdk": "abtesting",
+    "podspecs": ["FirebaseABTesting.podspec"],
     "filePatterns": [
       "^FirebaseABTesting.*",
       "Interop/Analytics/Public/[^/]+\\.h",
@@ -9,6 +10,7 @@
   },
   {
     "sdk": "analytics",
+    "podspecs": ["FirebaseAnalytics.podspec.json", "FirebaseAnalyticsSwift.podspec", "GoogleAppMeasurement.podspec.json"],
     "filePatterns": [
       "^FirebaseAnalytics.*",
       "^GoogleAppMeasurement.*"
@@ -16,6 +18,7 @@
   },
   {
     "sdk": "appcheck",
+    "podspecs": ["FirebaseAppCheck.podspec"],
     "filePatterns": [
       "^FirebaseAppCheck.*",
       "\\.github/workflows/app_check\\.yml"
@@ -23,12 +26,14 @@
   },
   {
     "sdk": "appdistribution",
+    "podspecs": ["FirebaseAppDistribution.podspec"],
     "filePatterns": [
       "^FirebaseAppDistribution.*"
     ]
   },
   {
     "sdk": "auth",
+    "podspecs": ["FirebaseAuth.podspec"],
     "filePatterns": [
       "^FirebaseAuth.*",
       "Interop/Auth/Public/[^/]+\\.h",
@@ -36,7 +41,26 @@
     ]
   },
   {
+    "sdk": "core",
+    "podspecs": ["FirebaseCore.podspec"],
+    "filePatterns": [
+      "^FirebaseCore.*",
+      "FirebaseCore.podspec",
+      "Interop/CoreDiagnostics/Public/[^/]+\\.h"
+    ]
+  },
+  {
+    "sdk": "core-diagnostics",
+    "podspecs": ["FirebaseCoreDiagnostics.podspec"],
+    "filePatterns": [
+      "Firebase/CoreDiagnostics/.*",
+      "Example/CoreDiagnostics/.*",
+      "Interop/CoreDiagnostics/Public/[^/]+\\.h"
+    ]
+  },
+  {
     "sdk": "crashlytics",
+    "podspecs": ["FirebaseCrashlytics.podspec"],
     "filePatterns": [
       "^Crashlytics.*",
       "FirebaseCrashlytics.podspec"
@@ -44,6 +68,7 @@
   },
   {
     "sdk": "database",
+    "podspecs": ["FirebaseDatabase.podspec", "FirebaseDatabaseSwift.podspec"],
     "filePatterns": [
       "^FirebaseDatabase.*",
       "\\.github/workflows/database\\.yml",
@@ -53,6 +78,7 @@
   },
   {
     "sdk": "dynamiclinks",
+    "podspecs": ["FirebaseDynamicLinks.podspec"],
     "filePatterns": [
       "^FirebaseDynamicLinks.*",
       "\\.github/workflows/dynamiclinks\\.yml",
@@ -60,7 +86,17 @@
     ]
   },
   {
+    "sdk": "firebase",
+    "podspecs": ["Firebase.podspec"],
+    "filePatterns": [
+      ".*.podspec",
+      ".*.podspec.json",
+      "CoreOnly/.*"
+    ]
+  },
+  {
     "sdk": "firestore",
+    "podspecs": ["FirebaseFirestore.podspec", "FirebaseFirestoreSwift.podspec"],
     "filePatterns": [
       "^Firestore/.*",
       "FirebaseAppCheck/Sources/Interop/[^/]+\\.h",
@@ -75,6 +111,7 @@
   },
   {
     "sdk": "functions",
+    "podspecs": ["FirebaseFunctions.podspec", "FirebaseFunctionsSwift.podspec"],
     "filePatterns": [
       "^Functions.*",
       "\\.github/workflows/functions\\.yml",
@@ -83,7 +120,15 @@
     ]
   },
   {
+    "sdk": "google-utilities-components",
+    "podspecs": ["GoogleUtilitiesComponents.podspec"],
+    "filePatterns": [
+      "^GoogleUtilitiesComponents.*"
+    ]
+  },
+  {
     "sdk": "inappmessaging",
+    "podspecs": ["FirebaseInAppMessaging.podspec", "FirebaseInAppMessagingSwift.podspec"],
     "filePatterns": [
       "^FirebaseInAppMessaging.*",
       "Interop/Analytics/Public/[^/]+\\.h",
@@ -92,12 +137,14 @@
   },
   {
     "sdk": "installations",
+    "podspecs": ["FirebaseInstallations.podspec"],
     "filePatterns": [
       "^FirebaseInstallations.*"
     ]
   },
   {
     "sdk": "messaging",
+    "podspecs": ["FirebaseMessaging.podspec"],
     "filePatterns": [
       "^FirebaseMessaging/.*",
       "Interop/Analytics/Public/[^/]+\\.h",
@@ -106,7 +153,16 @@
     ]
   },
   {
+    "sdk": "mlmodeldownloader",
+    "podspecs": ["FirebaseMLModelDownloader.podspec"],
+    "filePatterns": [
+      "^FirebaseMLModelDownloader/.*",
+      "FirebaseMLModelDownloader\\.podspec"
+    ]
+  },
+  {
     "sdk": "performance",
+    "podspecs": ["FirebasePerformance.podspec"],
     "filePatterns": [
       "^FirebasePerformance/.*",
       "FirebasePerformance\\.podspec",
@@ -115,6 +171,7 @@
   },
   {
     "sdk": "remoteconfig",
+    "podspecs": ["FirebaseRemoteConfig.podspec"],
     "filePatterns": [
       "^FirebaseRemoteConfig.*",
       "Interop/Analytics/Public/[^/]+\\.h",
@@ -123,7 +180,22 @@
     ]
   },
   {
+    "sdk": "segmentation",
+    "podspecs": ["FirebaseSegmentation.podspec"],
+    "filePatterns": [
+      "^FirebaseSegmentation.*"
+    ]
+  },
+  {
+    "sdk": "shared-swift",
+    "podspecs": ["FirebaseSharedSwift.podspec"],
+    "filePatterns": [
+      "^FirebaseSharedSwift.*"
+    ]
+  },
+  {
     "sdk": "storage",
+    "podspecs": ["FirebaseStorage.podspec", "FirebaseStorageSwift.podspec"],
     "filePatterns": [
       "^FirebaseStorage.*",
       "Interop/Auth/Public/[^/]+\\.h",
