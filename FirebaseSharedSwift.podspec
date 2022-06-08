@@ -1,14 +1,16 @@
 Pod::Spec.new do |s|
   s.name                    = 'FirebaseSharedSwift'
-  s.version                 = '8.11.0'
+  s.version                 = '9.1.0'
   s.summary                 = 'Shared Swift Extensions for Firebase'
 
   s.description      = <<-DESC
-This pod is for Firebase internal use and not supported for independent use.
+This pod provides capabilities like Codable support that is shared by multiple
+Firebase products. FirebaseSharedSwift is not supported for non-Firebase usage.
                        DESC
 
+
   s.homepage                = 'https://developers.google.com/'
-  s.license                 = { :type => 'Apache', :file => 'FirebaseSharedSwift/LICENSE' }
+  s.license                 = { :type => 'Apache-2.0', :file => 'FirebaseSharedSwift/LICENSE' }
   s.authors                 = 'Google, Inc.'
 
   s.source                  = {
@@ -36,12 +38,13 @@ This pod is for Firebase internal use and not supported for independent use.
   ]
 
   s.test_spec 'unit' do |unit_tests|
-    unit_tests.scheme = { :code_coverage => true }
     unit_tests.platforms = {
       :ios => ios_deployment_target,
       :osx => osx_deployment_target,
       :tvos => tvos_deployment_target
     }
-    unit_tests.source_files = 'FirebaseSharedSwift/Tests/**/*.swift'
+    unit_tests.source_files = [
+      'FirebaseSharedSwift/Tests/**/*.swift',
+    ]
   end
 end

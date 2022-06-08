@@ -34,9 +34,6 @@ function apt_install() {
 
 function install_xcpretty() {
   gem install xcpretty
-  if [[ -n "${TRAVIS:-}" ]]; then
-    gem install xcpretty-travis-formatter
-  fi
 }
 
 # Default values, if not supplied on the command line or environment
@@ -155,11 +152,6 @@ case "$project-$platform-$method" in
   RemoteConfigSample-*)
     install_xcpretty
     bundle exec pod install --project-directory=FirebaseRemoteConfig/Tests/Sample --repo-update
-    ;;
-
-  SegmentationSample-*)
-    install_xcpretty
-    bundle exec pod install --project-directory=FirebaseSegmentation/Tests/Sample --repo-update
     ;;
 
   WatchOSSample-*)

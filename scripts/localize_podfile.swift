@@ -20,7 +20,7 @@
 
 import Foundation
 
-let arg_cnts: Int = Int(CommandLine.argc)
+let arg_cnts: Int = .init(CommandLine.argc)
 
 let podfile = CommandLine.arguments[1]
 
@@ -36,6 +36,9 @@ let implicitPods = [
   "FirebaseCore", "FirebaseInstallations", "Firebase",
   "FirebaseAuth", "FirebaseABTesting",
   "FirebaseCoreDiagnostics", "FirebaseRemoteConfig",
+  "FirebaseCoreExtension", "FirebaseAppCheckInterop",
+  "FirebaseAuthInterop", "FirebaseMessagingInterop",
+  "FirebaseStorageInternal", "FirebaseCoreInternal",
 ]
 var didImplicits = false
 

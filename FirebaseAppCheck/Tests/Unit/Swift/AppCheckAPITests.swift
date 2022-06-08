@@ -65,8 +65,8 @@ final class AppCheckAPITests {
     }
 
     // Get token (async/await)
-    #if compiler(>=5.5) && canImport(_Concurrency)
-      if #available(iOS 15.0, macOS 12.0, macCatalyst 15.0, tvOS 15.0, watchOS 8.0, *) {
+    #if compiler(>=5.5.2) && canImport(_Concurrency)
+      if #available(iOS 13.0, macOS 11.15, macCatalyst 13.0, tvOS 13.0, watchOS 7.0, *) {
         // async/await is a Swift 5.5+ feature available on iOS 15+
         Task {
           do {
@@ -76,7 +76,7 @@ final class AppCheckAPITests {
           }
         }
       }
-    #endif // compiler(>=5.5) && canImport(_Concurrency)
+    #endif // compiler(>=5.5.2) && canImport(_Concurrency)
 
     // Set `AppCheckProviderFactory`
     AppCheck.setAppCheckProviderFactory(DummyAppCheckProviderFactory())
@@ -99,8 +99,8 @@ final class AppCheckAPITests {
       }
 
       // Get token (async/await)
-      #if compiler(>=5.5) && canImport(_Concurrency)
-        if #available(iOS 15.0, macOS 12.0, macCatalyst 15.0, tvOS 15.0, watchOS 8.0, *) {
+      #if compiler(>=5.5.2) && canImport(_Concurrency)
+        if #available(iOS 13.0, macOS 11.15, macCatalyst 13.0, tvOS 13.0, watchOS 7.0, *) {
           // async/await is a Swift 5.5+ feature available on iOS 15+
           Task {
             do {
@@ -110,7 +110,7 @@ final class AppCheckAPITests {
             }
           }
         }
-      #endif // compiler(>=5.5) && canImport(_Concurrency)
+      #endif // compiler(>=5.5.2) && canImport(_Concurrency)
 
       _ = debugProvider.localDebugToken()
       _ = debugProvider.currentDebugToken()
@@ -160,31 +160,35 @@ final class AppCheckAPITests {
     // MARK: - DeviceCheckProvider
 
     // `DeviceCheckProvider` initializer
-    if #available(iOS 11.0, macOS 10.15, macCatalyst 13.0, tvOS 11.0, *) {
-      if let app = FirebaseApp.app(), let deviceCheckProvider = DeviceCheckProvider(app: app) {
-        // Get token
-        deviceCheckProvider.getToken { token, error in
-          if let _ /* error */ = error {
-            // ...
-          } else if let _ /* token */ = token {
-            // ...
-          }
-        }
-        // Get token (async/await)
-        #if compiler(>=5.5) && canImport(_Concurrency)
-          if #available(iOS 15.0, macOS 12.0, macCatalyst 15.0, tvOS 15.0, watchOS 8.0, *) {
-            // async/await is a Swift 5.5+ feature available on iOS 15+
-            Task {
-              do {
-                _ = try await deviceCheckProvider.getToken()
-              } catch {
-                // ...
-              }
+    #if !os(watchOS)
+      if #available(iOS 11.0, macOS 10.15, macCatalyst 13.0, tvOS 11.0, *) {
+        if let app = FirebaseApp.app(), let deviceCheckProvider = DeviceCheckProvider(app: app) {
+          // Get token
+          deviceCheckProvider.getToken { token, error in
+            if let _ /* error */ = error {
+              // ...
+            } else if let _ /* token */ = token {
+              // ...
             }
           }
-        #endif // compiler(>=5.5) && canImport(_Concurrency)
+          // Get token (async/await)
+          #if compiler(>=5.5.2) && canImport(_Concurrency)
+            if #available(iOS 13.0, macOS 11.15, macCatalyst 13.0, tvOS 13.0, watchOS 7.0, *) {
+              // async/await is a Swift 5.5+ feature available on iOS 15+
+              Task {
+                do {
+                  _ = try await deviceCheckProvider.getToken()
+                } catch AppCheckErrorCode.unsupported {
+                  // ...
+                } catch {
+                  // ...
+                }
+              }
+            }
+          #endif // compiler(>=5.5.2) && canImport(_Concurrency)
+        }
       }
-    }
+    #endif // !os(watchOS)
   }
 }
 

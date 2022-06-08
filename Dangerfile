@@ -35,6 +35,7 @@ end
 # multiple directories may have multiple labels.
 def labelsForModifiedFiles()
   labels = []
+  labels.push("api: analytics") if @has_analytics_changes
   labels.push("api: abtesting") if @has_abtesting_changes
   labels.push("api: appcheck") if @has_appcheck_changes
   labels.push("api: appdistribution") if @has_appdistribution_changes
@@ -50,7 +51,6 @@ def labelsForModifiedFiles()
   labels.push("api: messaging") if @has_messaging_changes
   labels.push("api: performance") if @has_performance_changes
   labels.push("api: remoteconfig") if @has_remoteconfig_changes
-  labels.push("api: segmentation") if @has_segmentation_changes
   labels.push("api: storage") if @has_storage_changes
   labels.push("release-tooling") if @has_releasetooling_changes
   labels.push("public-api-change") if @has_api_changes
@@ -71,6 +71,18 @@ has_changelog_changes = hasChangesIn(["CHANGELOG"])
 has_license_changes = didModify(["LICENSE"])
 
 ## Product directories
+@has_analytics_changes = hasChangesIn([
+  "FirebaseAnalyticsOnDeviceConversionWrapper",
+  "FirebaseAnalyticsSwift",
+  "FirebaseAnalyticsWithoutAdIdSupportWrapper",
+  "FirebaseAnalyticsWrapper"
+]) || didModify([
+  "FirebaseAnalytics.podspec.json",
+  "FirebaseAnalyticsSwift.podspec",
+  "FirebaseAnalyticsOnDeviceConversion.podspec",
+  "GoogleAppMeasurement.podspec.json",
+  "GoogleAppMeasurementOnDeviceConversion.podspec.json"
+])
 @has_abtesting_changes = hasChangesIn("FirebaseABTesting")
 @has_abtesting_api_changes = hasChangesIn("FirebaseABTesting/Sources/Public/")
 @has_appcheck_changes = hasChangesIn("FirebaseAppCheck")
@@ -104,10 +116,8 @@ has_license_changes = didModify(["LICENSE"])
 @has_performance_api_changes = hasChangesIn("FirebasePerformance/Sources/Public/")
 @has_remoteconfig_changes = hasChangesIn("FirebaseRemoteConfig")
 @has_remoteconfig_api_changes = hasChangesIn("FirebaseRemoteConfig/Sources/Public/")
-@has_segmentation_changes = hasChangesIn("FirebaseSegmentation")
-@has_segmentation_api_changes = hasChangesIn("FirebaseSegmentation/Source/Public/")
 @has_storage_changes = hasChangesIn("FirebaseStorage")
-@has_storage_api_changes = hasChangesIn("FirebaseStorage/Sources/Public/")
+@has_storage_api_changes = hasChangesIn("FirebaseStorageInternal/Sources/Public/")
 
 @has_releasetooling_changes = hasChangesIn("ReleaseTooling/")
 
@@ -127,7 +137,6 @@ has_license_changes = didModify(["LICENSE"])
                      @has_messaging_api_changes ||
                      @has_performance_api_changes ||
                      @has_remoteconfig_api_changes ||
-                     @has_segmentation_api_changes ||
                      @has_storage_api_changes ||
                      @has_gdt_api_changes
 

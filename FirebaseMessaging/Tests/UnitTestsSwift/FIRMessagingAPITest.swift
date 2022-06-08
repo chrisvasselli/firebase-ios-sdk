@@ -22,15 +22,91 @@ import UserNotifications
 // exercised in the integration tests.
 func apis() {
   let messaging = Messaging.messaging()
+  let delegate = CustomDelegate()
+  messaging.delegate = delegate
+  messaging.isAutoInitEnabled = false
+  messaging.token(completion: { _, _ in
+  })
+  messaging.deleteToken { _ in
+  }
+  messaging.retrieveFCMToken(forSenderID: "fakeSenderID") { _, _ in
+  }
+  messaging.deleteData { _ in
+  }
+  messaging.deleteFCMToken(forSenderID: "fakeSenderID") { _ in
+  }
 
   if let _ = messaging.apnsToken {}
 
   let apnsToken = Data()
   messaging.setAPNSToken(apnsToken, type: .prod)
 
+  // Use random to eliminate the warning that we're evaluating to a constant.
+  let type: MessagingAPNSTokenType = Bool.random() ? .prod : .sandbox
+  switch type {
+  case .prod: ()
+  case .sandbox: ()
+  case .unknown: ()
+  // The following case serves to silence the warning that this
+  // enum "may have additional unknown values". In the event that the existing
+  // cases change, this switch statement will generate
+  // a "Switch must be exhaustive" warning.
+  @unknown default: ()
+  }
+
+  // Use random to eliminate the warning that we're evaluating to a constant.
+  let messagingError: MessagingError = Bool
+    .random() ? MessagingError(.unknown) : MessagingError(.authentication)
+  switch messagingError.code {
+  case .unknown: ()
+  case .authentication: ()
+  case .noAccess: ()
+  case .timeout: ()
+  case .network: ()
+  case .operationInProgress: ()
+  case .invalidRequest: ()
+  case .invalidTopicName: ()
+  // The following case serves to silence the warning that this
+  // enum "may have additional unknown values". In the event that the existing
+  // cases change, this switch statement will generate
+  // a "Switch must be exhaustive" warning.
+  @unknown default: ()
+  }
+
+  // Use random to eliminate the warning that we're evaluating to a constant.
+  let status: MessagingMessageStatus = Bool.random() ? .unknown : .new
+  switch status {
+  case .new: ()
+  case .unknown: ()
+  // The following case serves to silence the warning that this
+  // enum "may have additional unknown values". In the event that the existing
+  // cases change, this switch statement will generate
+  // a "Switch must be exhaustive" warning.
+  @unknown default: ()
+  }
+
+  // TODO: Mark the initializer as unavialable, as devs shouldn't be able to instantiate this.
+  _ = MessagingMessageInfo().status
+
+  NotificationCenter.default.post(name: .MessagingRegistrationTokenRefreshed, object: nil)
+
   let topic = "cat_video"
   messaging.subscribe(toTopic: topic)
   messaging.unsubscribe(fromTopic: topic)
+  messaging.unsubscribe(fromTopic: topic, completion: { error in
+    if let error = error {
+      switch error {
+      // Handle errors in the new format.
+      case MessagingError.timeout:
+        ()
+      default:
+        ()
+      }
+    }
+  })
+
+  messaging.unsubscribe(fromTopic: topic) { _ in
+  }
 
   messaging.appDidReceiveMessage([:])
 
@@ -43,11 +119,15 @@ func apis() {
   }
 }
 
-@available(iOS 15, tvOS 15, macOS 12, watchOS 8, *)
+class CustomDelegate: NSObject, MessagingDelegate {
+  func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {}
+}
+
+@available(iOS 13, tvOS 13, macOS 10.15, macCatalyst 13, watchOS 7, *)
 func apiAsync() async throws {
   let messaging = Messaging.messaging()
   let topic = "cat_video"
-  #if compiler(>=5.5) && canImport(_Concurrency)
+  #if compiler(>=5.5.2) && canImport(_Concurrency)
     try await messaging.subscribe(toTopic: topic)
 
     try await messaging.unsubscribe(fromTopic: topic)
@@ -61,5 +141,11 @@ func apiAsync() async throws {
     try await messaging.deleteFCMToken(forSenderID: "fakeSenderID")
 
     try await messaging.deleteData()
+
+    // Test new handling of errors
+    do {
+      try await messaging.unsubscribe(fromTopic: topic)
+    } catch MessagingError.timeout {
+    } catch {}
   #endif
 }
