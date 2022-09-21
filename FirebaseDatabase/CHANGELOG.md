@@ -1,3 +1,9 @@
+# 9.6.0
+- [fixed] Fix priority inversion issue exposed by Xcode 14. (#10130)
+
+# 9.3.0
+- [fixed] Fix `reference(withPath:)` race condition crash. (#7885)
+
 # 8.12.0
 - [fixed] **Breaking change:** Mark `getData()` snapshot as nullable to fix Swift API. (#9655)
 

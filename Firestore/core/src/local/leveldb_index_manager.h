@@ -65,17 +65,25 @@ class LevelDbIndexManager : public IndexManager {
   void DeleteFieldIndex(const model::FieldIndex& index) override;
 
   std::vector<model::FieldIndex> GetFieldIndexes(
-      const std::string& collection_group) override;
+      const std::string& collection_group) const override;
 
-  std::vector<model::FieldIndex> GetFieldIndexes() override;
+  std::vector<model::FieldIndex> GetFieldIndexes() const override;
 
   absl::optional<model::FieldIndex> GetFieldIndex(
-      const core::Target& target) override;
+      const core::Target& target) const override;
+
+  const model::IndexOffset GetMinOffset(
+      const core::Target& target) const override;
+
+  const model::IndexOffset GetMinOffset(
+      const std::string& collection_group) const override;
+
+  IndexType GetIndexType(const core::Target& target) const override;
 
   absl::optional<std::vector<model::DocumentKey>> GetDocumentsMatchingTarget(
       const core::Target& target) override;
 
-  absl::optional<std::string> GetNextCollectionGroupToUpdate() override;
+  absl::optional<std::string> GetNextCollectionGroupToUpdate() const override;
 
   void UpdateCollectionGroup(const std::string& collection_group,
                              model::IndexOffset offset) override;
@@ -146,7 +154,11 @@ class LevelDbIndexManager : public IndexManager {
   std::string EncodedDirectionalKey(const model::FieldIndex& index,
                                     const model::DocumentKey& key);
 
-  std::vector<core::Target> GetSubTargets(const core::Target& target);
+  const std::vector<core::Target> GetSubTargets(
+      const core::Target& target) const;
+
+  const model::IndexOffset GetMinOffset(
+      const std::vector<model::FieldIndex>& indexes) const;
 
   /**
    * Encodes the given bounds according to the specification in `target`. For IN

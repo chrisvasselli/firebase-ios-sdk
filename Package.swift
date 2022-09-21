@@ -19,7 +19,7 @@
 import PackageDescription
 import class Foundation.ProcessInfo
 
-let firebaseVersion = "9.1.0"
+let firebaseVersion = "9.6.0"
 
 let package = Package(
   name: "Firebase",
@@ -150,7 +150,7 @@ let package = Package(
       url: "https://github.com/google/GoogleAppMeasurement.git",
       // Note that CI changes the version to the head of main for CI.
       // See scripts/setup_spm_tests.sh.
-      .exact("9.1.0")
+      .exact("9.6.0")
     ),
     .package(
       name: "GoogleDataTransport",
@@ -344,8 +344,8 @@ let package = Package(
     ),
     .binaryTarget(
       name: "FirebaseAnalytics",
-      url: "https://dl.google.com/firebase/ios/swiftpm/9.1.0/FirebaseAnalytics.zip",
-      checksum: "5a0e2916e791904fa7be8e8a3c6913fc080ac8a050f3814ef18957e01d21d870"
+      url: "https://dl.google.com/firebase/ios/swiftpm/9.6.0/FirebaseAnalytics.zip",
+      checksum: "b2f2b38e2764a09af0781c61093693eb61739d0a43f203f2e4cbf10e4aa6c329"
     ),
     .target(
       name: "FirebaseAnalyticsSwiftTarget",
@@ -1060,6 +1060,9 @@ let package = Package(
         "README.md",
         "ObjC/",
       ],
+      resources: [
+        .process("Defaults-testInfo.plist"),
+      ],
       cSettings: [
         .headerSearchPath("../../"),
       ]
@@ -1253,12 +1256,6 @@ let package = Package(
       exclude: [
         // Disable Swift tests as mixed targets are not supported (Xcode 12.3).
         "Unit/Swift",
-
-        // Disable Keychain dependent tests as they require a host application on iOS.
-        "Integration",
-        "Unit/AppAttestProvider/Storage/FIRAppAttestArtifactStorageTests.m",
-        "Unit/Core/FIRAppCheckIntegrationTests.m",
-        "Unit/Core/FIRAppCheckStorageTests.m",
       ],
       resources: [
         .process("Fixture"),

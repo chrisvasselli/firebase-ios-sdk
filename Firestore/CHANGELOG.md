@@ -1,3 +1,22 @@
+# Unreleased
+- [added] Expose client side indexing feature with `FIRFirestore.setIndexConfigurationFromJSON` and
+  `FIRFirestore.setIndexConfigurationFromStream` (#10090).
+- [fixed] Fixed high CPU usage whenever Firestore was in use (#10168).
+
+# 9.5.0
+- [fixed] Fixed an intermittent crash if `ListenerRegistration::Remove()` was
+  invoked concurrently (#10065).
+- [fixed] Fixed a crash if multiple large write batches with overlapping
+  documents were executed where at least one batch performed a delete operation
+  (#9965).
+
+# 9.4.0
+- [fixed] Fixed a crash during app start (#9985, #10018).
+
+# 9.2.0
+- [feature] Added `TransactionOptions` to control how many times a transaction
+  will retry commits before failing (#9838).
+
 # 9.0.0
 - [fixed] Fixed CMake build errors when building with Xcode 13.3.1 (#9702).
 - [fixed] **Breaking change:** Fixed an issue where returning `nil` from the

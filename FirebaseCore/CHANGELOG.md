@@ -1,3 +1,29 @@
+# Firebase 9.6.0
+- [fixed] Mac apps using Firebase products that store SDK data in the keychain
+  will no longer prompt the user for permission to access the keychain. This
+  requires that Mac apps using Firebase be signed with a provisioning profile
+  that has the Keychain Sharing capability enabled. (#9392)
+- [fixed] Fixed `Array.Index`-related compile time errors when building with older Swift versions. (#10171)
+- [fixed] Update dependency specification for GTMSessionFetcher to allow all 2.x versions. (#10131)
+
+# Firebase 9.5.0
+- [fixed] Zip Distribution Fixed Promises module name issue impacting lld builds. (#10071)
+- [fixed] Limit dependency GTMSessionFetcher version update to < 2.1.0 to avoid a new deprecation
+  warning. (#10123)
+
+# Firebase 9.4.1
+- [fixed] Swift Package Manager only release to fix a 9.4.0 tagging issue impacting some users. (#10083)
+
+# Firebase 9.4.0
+- [fixed] Fixed rare crash on launch due to out-of-bounds exception in FirebaseCore. (#10025)
+
+# Firebase 9.3.0
+- [fixed] Remove GoogleSignInSwiftSupport from Zip and Carthage distributions due to
+  infeasibility. The GoogleSignIn distribution continues. (#9937)
+
+# Firebase 9.2.0
+- [added] Zip and Carthage distributions now include GoogleSignInSwiftSupport. (#9900)
+
 # Firebase 9.0.0
 - [changed] Firebase now requires at least Xcode 13.3.1.
 - [deprecated] Usage of the Firebase pod, the Firebase module (`import Firebase`), and `Firebase.h`
