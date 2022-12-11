@@ -1,4 +1,21 @@
-# Unreleased
+# 10.3.0
+- [feature] Add MultiDb support.
+- [fixed] Fix App crashed when there are nested data structures inside IN
+  Filter (#10507).
+
+# 10.2.0
+- [fixed] Fix FAILED_PRECONDITION when writing to a deleted document in a
+  transaction (#10431).
+- [fixed] Fixed data race in credentials provider (#10393).
+- [fixed] Fix Firestore failing to raise initial snapshot from empty local cache
+  result (#10437).
+
+# 10.0.0
+- [feature] Added `Query.count()`, which fetches the number of documents in the
+  result set without actually downloading the documents (#10246).
+- [fixed] Fixed compiler warning about `@param comparator` (#10226).
+
+# 9.6.0
 - [added] Expose client side indexing feature with `FIRFirestore.setIndexConfigurationFromJSON` and
   `FIRFirestore.setIndexConfigurationFromStream` (#10090).
 - [fixed] Fixed high CPU usage whenever Firestore was in use (#10168).

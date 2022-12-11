@@ -1,3 +1,39 @@
+# Firebase 10.2.0
+- Update GTMSessionFetcher dependency specifications to enable support for the compatible
+  GTMSessionFetcher 3.x versions.
+
+# Firebase 10.1.0
+- [changed] Bitcode is no longer included in Firebase binary distributions. Xcode 14 does not
+  support bitcode. tvOS apps using a Firebase binary distribution will now need to use
+  Xcode 14. (#10372)
+
+# Firebase 10.0.0
+- [changed] **Breaking change**: Firebase's minimum supported versions have
+  updated for the following platforms:
+  - If using **CocoaPods**:
+    - | Platform  | Firebase 9 | Firebase 10 |
+      | ------------- | ------------- | ------------- |
+      | iOS  | 10.0  | **11.0**  |
+      | tvOS  | 10.0  | **12.0**  |
+      | macOS  | 10.12  | **10.13**  |
+      | watchOS  | 6.0  | 6.0  |
+  - If using **Swift Package Manager**:
+    - | Platform  | Firebase 9 | Firebase 10 |
+      | ------------- | ------------- | ------------- |
+      | iOS  | 11.0  | 11.0  |
+      | tvOS  | 12.0  | 12.0  |
+      | macOS  | 10.12  | **10.13**  |
+      | watchOS  | 7.0  | 7.0  |
+  - If using **Carthage** or the **Zip** distribution:
+    - | Platform  | Firebase 9 | Firebase 10 |
+      | ------------- | ------------- | ------------- |
+      | iOS  | 11.0  | 11.0  |
+      | tvOS  | 11.0  | **12.0**  |
+      | macOS  | 10.13  | 10.13  |
+      | watchOS  | N/A  | N/A  |
+- [changed] **Breaking change**: Update dependency specification for
+  GTMSessionFetcher to allow all versions that are >= 2.1 and < 3.0. (#10131)
+
 # Firebase 9.6.0
 - [fixed] Mac apps using Firebase products that store SDK data in the keychain
   will no longer prompt the user for permission to access the keychain. This
@@ -18,6 +54,7 @@
 - [fixed] Fixed rare crash on launch due to out-of-bounds exception in FirebaseCore. (#10025)
 
 # Firebase 9.3.0
+- [changed] Discontinue bitcode inclusion in all binary distributions.
 - [fixed] Remove GoogleSignInSwiftSupport from Zip and Carthage distributions due to
   infeasibility. The GoogleSignIn distribution continues. (#9937)
 

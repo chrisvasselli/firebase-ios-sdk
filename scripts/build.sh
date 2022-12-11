@@ -39,6 +39,7 @@ product can be one of:
   MLModelDownloaderSample
   RemoteConfig
   RemoteConfigSample
+  Sessions
   Storage
   SymbolCollision
   GoogleDataTransport
@@ -166,7 +167,7 @@ tvos_flags=(
   -destination 'platform=tvOS Simulator,name=Apple TV'
 )
 watchos_flags=(
-  -destination 'platform=WatchOS Simulator,name=Apple Watch Series 7 - 45mm'
+  -destination 'platform=watchOS Simulator,name=Apple Watch Series 7 (45mm)'
 )
 catalyst_flags=(
   ARCHS=x86_64 VALID_ARCHS=x86_64 SUPPORTS_MACCATALYST=YES -sdk macosx
@@ -510,13 +511,29 @@ case "$product-$platform-$method" in
       build
     ;;
 
+  Sessions-*-integration)
+    # Perform "pod install" to install the relevant dependencies
+    # ./FirebaseSessions/generate_testapp.sh
+    pod_gen FirebaseSessions.podspec --platforms=ios --clean
+    cd FirebaseSessions/Tests/TestApp; pod install; cd -
+
+    # Run E2E Integration Tests for Autopush.
+    RunXcodebuild \
+      -workspace 'FirebaseSessions/Tests/TestApp/AppQualityDevApp.xcworkspace' \
+      -scheme "AppQualityDevApp_iOS" \
+      "${ios_flags[@]}" \
+      "${xcb_flags[@]}" \
+      build \
+      test
+    ;;
+
   Storage-*-xcodebuild)
     pod_gen FirebaseStorage.podspec --platforms=ios
 
     # Add GoogleService-Info.plist to generated Test Wrapper App.
     ruby ./scripts/update_xcode_target.rb gen/FirebaseStorage/Pods/Pods.xcodeproj \
       AppHost-FirebaseStorage-Unit-Tests \
-      ../../../FirebaseStorageInternal/Tests/Integration/Resources/GoogleService-Info.plist
+      ../../../FirebaseStorage/Tests/Integration/Resources/GoogleService-Info.plist
 
     if check_secrets; then
       # Integration tests are only run on iOS to minimize flake failures.
@@ -547,7 +564,7 @@ case "$product-$platform-$method" in
     # Add GoogleService-Info.plist to generated Test Wrapper App.
     ruby ./scripts/update_xcode_target.rb gen/FirebaseCombineSwift/Pods/Pods.xcodeproj \
       AppHost-FirebaseCombineSwift-Unit-Tests \
-      ../../../FirebaseStorageInternal/Tests/Integration/Resources/GoogleService-Info.plist
+      ../../../FirebaseStorage/Tests/Integration/Resources/GoogleService-Info.plist
 
     if check_secrets; then
       # Integration tests are only run on iOS to minimize flake failures.
