@@ -18,11 +18,10 @@ import XCTest
 @testable import FirebaseSessions
 
 class SessionCoordinatorTests: XCTestCase {
-  var identifiers = MockIdentifierProvider()
+  var installations = MockInstallationsProtocol()
   var time = MockTimeProvider()
   var fireLogger = MockGDTLogger()
   var appInfo = MockApplicationInfo()
-  var sampler = SessionSampler()
 
   var coordinator: SessionCoordinator!
 
@@ -30,17 +29,22 @@ class SessionCoordinatorTests: XCTestCase {
     super.setUp()
 
     coordinator = SessionCoordinator(
-      identifiers: identifiers,
-      fireLogger: fireLogger,
-      sampler: sampler
+      installations: installations,
+      fireLogger: fireLogger
     )
-    sampler.sessionSamplingRate = 1.0
+  }
+
+  var defaultSessionInfo: SessionInfo {
+    return SessionInfo(
+      sessionId: "test_session_id",
+      firstSessionId: "test_first_session_id",
+      dispatchEvents: true,
+      sessionIndex: 0
+    )
   }
 
   func test_attemptLoggingSessionStart_logsToGDT() throws {
-    identifiers.mockAllValidIDs()
-
-    let event = SessionStartEvent(identifiers: identifiers, appInfo: appInfo, time: time)
+    let event = SessionStartEvent(sessionInfo: defaultSessionInfo, appInfo: appInfo, time: time)
     var resultSuccess = false
     coordinator.attemptLoggingSessionStart(event: event) { result in
       switch result {
@@ -53,7 +57,7 @@ class SessionCoordinatorTests: XCTestCase {
     // Make sure we've set the Installation ID
     assertEqualProtoString(
       event.proto.session_data.firebase_installation_id,
-      expected: MockIdentifierProvider.testInstallationID,
+      expected: MockInstallationsProtocol.testInstallationId,
       fieldName: "installation_id"
     )
 
@@ -63,10 +67,9 @@ class SessionCoordinatorTests: XCTestCase {
   }
 
   func test_attemptLoggingSessionStart_handlesGDTError() throws {
-    identifiers.mockAllValidIDs()
     fireLogger.result = .failure(NSError(domain: "TestError", code: -1))
 
-    let event = SessionStartEvent(identifiers: identifiers, appInfo: appInfo, time: time)
+    let event = SessionStartEvent(sessionInfo: defaultSessionInfo, appInfo: appInfo, time: time)
 
     // Start success so it must be set to false
     var resultSuccess = true
@@ -82,7 +85,7 @@ class SessionCoordinatorTests: XCTestCase {
     // Make sure we've set the Installation ID
     assertEqualProtoString(
       event.proto.session_data.firebase_installation_id,
-      expected: MockIdentifierProvider.testInstallationID,
+      expected: MockInstallationsProtocol.testInstallationId,
       fieldName: "installation_id"
     )
 
@@ -91,12 +94,12 @@ class SessionCoordinatorTests: XCTestCase {
     XCTAssertFalse(resultSuccess)
   }
 
-  func test_eventNotDropped_handlesAllEventsAllowed() throws {
-    identifiers.mockAllValidIDs()
+  func test_attemptLoggingSessionStart_handlesInstallationsError() throws {
+    installations.result = .failure(NSError(domain: "TestInstallationsError", code: -1))
 
-    let event = SessionStartEvent(identifiers: identifiers, appInfo: appInfo, time: time)
+    let event = SessionStartEvent(sessionInfo: defaultSessionInfo, appInfo: appInfo, time: time)
 
-    sampler.sessionSamplingRate = 1.0
+    // Start success so it must be set to false
     var resultSuccess = true
     coordinator.attemptLoggingSessionStart(event: event) { result in
       switch result {
@@ -107,26 +110,44 @@ class SessionCoordinatorTests: XCTestCase {
       }
     }
 
-    XCTAssertTrue(resultSuccess)
+    // We should have logged the event, but with a failed result
+    XCTAssertNotNil(fireLogger.loggedEvent)
+    XCTAssertFalse(resultSuccess)
   }
 
-  func test_eventDropped_handlesZeroSamplingRate() throws {
-    identifiers.mockAllValidIDs()
+  func test_attemptLoggingSessionStart_handlesGDTAndInstallationsError() throws {
+    let fireLogError = NSError(domain: "DataTransportError", code: -2)
+    fireLogger.result = .failure(fireLogError)
+    installations
+      .result = .failure(FirebaseSessionsError
+        .SessionInstallationsError(NSError(domain: "TestInstallationsError", code: -1)))
 
-    let event = SessionStartEvent(identifiers: identifiers, appInfo: appInfo, time: time)
+    let event = SessionStartEvent(sessionInfo: defaultSessionInfo, appInfo: appInfo, time: time)
 
-    sampler.sessionSamplingRate = 0.0
-
+    // Start success so it must be set to false
     var resultSuccess = true
     coordinator.attemptLoggingSessionStart(event: event) { result in
       switch result {
       case .success(()):
         resultSuccess = true
-      case .failure:
+      case let .failure(err):
         resultSuccess = false
+        // Result should use the FireLog error if there's an error in both
+        // Installations and FireLog
+        XCTAssertEqual(err, FirebaseSessionsError.DataTransportError(fireLogError))
       }
     }
 
+    // Make sure we've set the Installation ID to empty because the FIID
+    // fetch failed
+    assertEqualProtoString(
+      event.proto.session_data.firebase_installation_id,
+      expected: "",
+      fieldName: "installation_id"
+    )
+
+    // We should have logged the event, but with a failed result
+    XCTAssertEqual(fireLogger.loggedEvent, event)
     XCTAssertFalse(resultSuccess)
   }
 }

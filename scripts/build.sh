@@ -171,7 +171,7 @@ watchos_flags=(
 )
 catalyst_flags=(
   ARCHS=x86_64 VALID_ARCHS=x86_64 SUPPORTS_MACCATALYST=YES -sdk macosx
-  -destination platform="macOS,variant=Mac Catalyst" TARGETED_DEVICE_FAMILY=2
+  -destination platform="macOS,variant=Mac Catalyst,arch=x86_64" TARGETED_DEVICE_FAMILY=2
   CODE_SIGN_IDENTITY=- CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 )
 
@@ -430,6 +430,16 @@ case "$product-$platform-$method" in
     fi
     ;;
 
+  MessagingSampleStandaloneWatchApp-*-*)
+    if check_secrets; then
+      RunXcodebuild \
+        -workspace 'FirebaseMessaging/Apps/SampleStandaloneWatchApp/SampleStandaloneWatchApp.xcworkspace' \
+        -scheme "SampleStandaloneWatchApp Watch App" \
+        "${xcb_flags[@]}" \
+        build
+    fi
+    ;;
+
   MLModelDownloaderSample-*-*)
   if check_secrets; then
     RunXcodebuild \
@@ -517,10 +527,30 @@ case "$product-$platform-$method" in
     pod_gen FirebaseSessions.podspec --platforms=ios --clean
     cd FirebaseSessions/Tests/TestApp; pod install; cd -
 
+    # Run E2E Integration Tests for Prod.
+    RunXcodebuild \
+      -workspace 'FirebaseSessions/Tests/TestApp/AppQualityDevApp.xcworkspace' \
+      -scheme "AppQualityDevApp_iOS" \
+      "${ios_flags[@]}" \
+      "${xcb_flags[@]}" \
+      build \
+      test
+
+    # Run E2E Integration Tests for Staging.
+    RunXcodebuild \
+      -workspace 'FirebaseSessions/Tests/TestApp/AppQualityDevApp.xcworkspace' \
+      -scheme "AppQualityDevApp_iOS" \
+      FirebaseSessionsRunEnvironment=STAGING \
+      "${ios_flags[@]}" \
+      "${xcb_flags[@]}" \
+      build \
+      test
+
     # Run E2E Integration Tests for Autopush.
     RunXcodebuild \
       -workspace 'FirebaseSessions/Tests/TestApp/AppQualityDevApp.xcworkspace' \
       -scheme "AppQualityDevApp_iOS" \
+      FirebaseSessionsRunEnvironment=AUTOPUSH \
       "${ios_flags[@]}" \
       "${xcb_flags[@]}" \
       build \
@@ -664,6 +694,14 @@ case "$product-$platform-$method" in
   *-*-spmbuildonly)
     RunXcodebuild \
       -scheme $product \
+      "${xcb_flags[@]}" \
+      build
+    ;;
+
+  SwiftPMClientApp-*-xcodebuild)
+    RunXcodebuild \
+      -project 'SwiftPMTests/ClientApp/ClientApp.xcodeproj' \
+      -scheme "ClientApp" \
       "${xcb_flags[@]}" \
       build
     ;;

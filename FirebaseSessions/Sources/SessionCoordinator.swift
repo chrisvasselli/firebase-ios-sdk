@@ -14,47 +14,66 @@
 
 import Foundation
 
+protocol SessionCoordinatorProtocol {
+  func attemptLoggingSessionStart(event: SessionStartEvent,
+                                  callback: @escaping (Result<Void, FirebaseSessionsError>) -> Void)
+}
+
 ///
 /// SessionCoordinator is responsible for coordinating the systems in this SDK
 /// involved with sending a Session Start event.
 ///
-class SessionCoordinator {
-  let identifiers: IdentifierProvider
+class SessionCoordinator: SessionCoordinatorProtocol {
+  let installations: InstallationsProtocol
   let fireLogger: EventGDTLoggerProtocol
-  let sampler: SessionSamplerProtocol
 
-  init(identifiers: IdentifierProvider, fireLogger: EventGDTLoggerProtocol,
-       sampler: SessionSamplerProtocol) {
-    self.identifiers = identifiers
+  init(installations: InstallationsProtocol,
+       fireLogger: EventGDTLoggerProtocol) {
+    self.installations = installations
     self.fireLogger = fireLogger
-    self.sampler = sampler
   }
 
-  // Begins the process of logging a SessionStartEvent to FireLog, while taking into account Data Collection, Sampling, and fetching Settings
+  /// Begins the process of logging a SessionStartEvent to FireLog after
+  /// it has been approved for sending
   func attemptLoggingSessionStart(event: SessionStartEvent,
-                                  callback: @escaping (Result<Void, Error>) -> Void) {
-    if sampler.shouldSendEventForSession(sessionId: identifiers.sessionID) {
-      event.setInstallationID(identifiers: identifiers)
-
-      fireLogger.logEvent(event: event) { result in
-        switch result {
+                                  callback: @escaping (Result<Void, FirebaseSessionsError>)
+                                    -> Void) {
+    /// Order of execution
+    /// 1. Fetch the installations Id. Regardless of success, move to step 2
+    /// 2. Log the event. If successful, all is good. Else, log the message with error.
+    /// 3. If there was a FireLog error, expose it to the callback. Otherwise expose the FIID
+    /// error if it exists. Otherwise, success.
+    fillInFIID(event: event) { fiidResult in
+      self.fireLogger.logEvent(event: event) { logResult in
+        switch logResult {
         case .success():
-          Logger.logInfo("Successfully logged Session Start event to GoogleDataTransport")
-          callback(.success(()))
+          Logger.logDebug("Successfully logged Session Start event to GoogleDataTransport")
+
+          switch fiidResult {
+          case .success(()):
+            callback(.success(()))
+          case let .failure(error):
+            callback(.failure(error))
+          }
         case let .failure(error):
-          Logger
-            .logError(
-              "Error logging Session Start event to GoogleDataTransport: \(error)."
-            )
-          callback(.failure(error))
+          callback(.failure(FirebaseSessionsError.DataTransportError(error)))
         }
       }
-    } else {
-      Logger
-        .logInfo(
-          "Session event dropped due to sampling."
-        )
-      callback(.failure(FirebaseSessionsError.SessionSamplingError))
+    }
+  }
+
+  private func fillInFIID(event: SessionStartEvent,
+                          callback: @escaping (Result<Void, FirebaseSessionsError>)
+                            -> Void) {
+    installations.installationID { result in
+      switch result {
+      case let .success(fiid):
+        event.setInstallationID(installationId: fiid)
+        callback(.success(()))
+      case let .failure(error):
+        event.setInstallationID(installationId: "")
+        callback(.failure(FirebaseSessionsError.SessionInstallationsError(error)))
+      }
     }
   }
 }

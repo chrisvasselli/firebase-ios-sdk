@@ -15,20 +15,28 @@
 
 import Foundation
 
-@_implementationOnly import GoogleUtilities
+#if SWIFT_PACKAGE
+  import FirebaseSessionsObjC
+#endif // SWIFT_PACKAGE
+
+#if SWIFT_PACKAGE
+  @_implementationOnly import GoogleUtilities_Environment
+#else
+  @_implementationOnly import GoogleUtilities
+#endif // SWIFT_PACKAGE
 
 protocol NetworkInfoProtocol {
-  var mobileCountryCode: String? { get }
+  var networkType: GULNetworkType { get }
 
-  var mobileNetworkCode: String? { get }
+  var mobileSubtype: String { get }
 }
 
 class NetworkInfo: NetworkInfoProtocol {
-  var mobileCountryCode: String? {
-    return GULNetworkInfo.getNetworkMobileCountryCode()
+  var networkType: GULNetworkType {
+    return GULNetworkInfo.getNetworkType()
   }
 
-  var mobileNetworkCode: String? {
-    return GULNetworkInfo.getNetworkMobileNetworkCode()
+  var mobileSubtype: String {
+    return GULNetworkInfo.getNetworkRadioType()
   }
 }

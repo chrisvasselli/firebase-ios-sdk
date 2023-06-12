@@ -374,12 +374,15 @@ static void callInMainThreadWithAuthDataResultAndError(
     _phoneNumber = phoneNumber;
     _metadata = metadata ?: [[FIRUserMetadata alloc] initWithCreationDate:nil lastSignInDate:nil];
     _tenantID = tenantID;
-    // The `heartbeatLogger` will be set later via a property update.
+    // The `heartbeatLogger` and `appCheck` will be set later via a property update.
     _requestConfiguration = [[FIRAuthRequestConfiguration alloc] initWithAPIKey:APIKey
                                                                           appID:appID
-                                                                heartbeatLogger:nil];
+                                                                           auth:_auth
+                                                                heartbeatLogger:nil
+                                                                       appCheck:nil];
 #if TARGET_OS_IOS
     _multiFactor = multiFactor ?: [[FIRMultiFactor alloc] init];
+    _multiFactor.user = self;
 #endif
   }
   return self;
@@ -1180,6 +1183,8 @@ static void callInMainThreadWithAuthDataResultAndError(
         FIRAuthRequestConfiguration *requestConfiguration = self.auth.requestConfiguration;
         FIRSignInWithGameCenterRequest *gameCenterRequest = [[FIRSignInWithGameCenterRequest alloc]
                 initWithPlayerID:gameCenterCredential.playerID
+                    teamPlayerID:gameCenterCredential.teamPlayerID
+                    gamePlayerID:gameCenterCredential.gamePlayerID
                     publicKeyURL:gameCenterCredential.publicKeyURL
                        signature:gameCenterCredential.signature
                             salt:gameCenterCredential.salt

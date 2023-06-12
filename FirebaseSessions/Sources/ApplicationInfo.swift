@@ -16,7 +16,16 @@
 import Foundation
 
 @_implementationOnly import FirebaseCore
-@_implementationOnly import GoogleUtilities
+
+#if SWIFT_PACKAGE
+  import FirebaseSessionsObjC
+#endif // SWIFT_PACKAGE
+
+#if SWIFT_PACKAGE
+  @_implementationOnly import GoogleUtilities_Environment
+#else
+  @_implementationOnly import GoogleUtilities
+#endif // SWIFT_PACKAGE
 
 /// Development environment for the application.
 enum DevEnvironment: String {
@@ -29,9 +38,6 @@ protocol ApplicationInfoProtocol {
   /// Google App ID / GMP App ID
   var appID: String { get }
 
-  /// App's bundle ID / bundle short version
-  var bundleID: String { get }
-
   /// Version of the Firebase SDK
   var sdkVersion: String { get }
 
@@ -41,8 +47,8 @@ protocol ApplicationInfoProtocol {
   /// Model of the device
   var deviceModel: String { get }
 
-  /// Validated Mobile Country Code and Mobile Network Code
-  var mccMNC: String { get }
+  /// Network information for the application
+  var networkInfo: NetworkInfoProtocol { get }
 
   /// Development environment on which the application is running.
   var environment: DevEnvironment { get }
@@ -50,23 +56,26 @@ protocol ApplicationInfoProtocol {
   var appBuildVersion: String { get }
 
   var appDisplayVersion: String { get }
+
+  var osBuildVersion: String { get }
+
+  var osDisplayVersion: String { get }
 }
 
 class ApplicationInfo: ApplicationInfoProtocol {
   let appID: String
 
-  private let networkInfo: NetworkInfoProtocol
+  private let networkInformation: NetworkInfoProtocol
   private let envParams: [String: String]
+  private let infoDict: [String: Any]?
 
   init(appID: String, networkInfo: NetworkInfoProtocol = NetworkInfo(),
-       envParams: [String: String] = ProcessInfo.processInfo.environment) {
+       envParams: [String: String] = ProcessInfo.processInfo.environment,
+       infoDict: [String: Any]? = Bundle.main.infoDictionary) {
     self.appID = appID
-    self.networkInfo = networkInfo
+    networkInformation = networkInfo
     self.envParams = envParams
-  }
-
-  var bundleID: String {
-    return Bundle.main.bundleIdentifier ?? ""
+    self.infoDict = infoDict
   }
 
   var sdkVersion: String {
@@ -78,15 +87,11 @@ class ApplicationInfo: ApplicationInfoProtocol {
   }
 
   var deviceModel: String {
-    #if targetEnvironment(simulator)
-      return GULAppEnvironmentUtil.deviceSimulatorModel() ?? ""
-    #else
-      return GULAppEnvironmentUtil.deviceModel() ?? ""
-    #endif // targetEnvironment(simulator)
+    return GULAppEnvironmentUtil.deviceSimulatorModel() ?? ""
   }
 
-  var mccMNC: String {
-    return FIRSESValidateMccMnc(networkInfo.mobileCountryCode, networkInfo.mobileNetworkCode) ?? ""
+  var networkInfo: NetworkInfoProtocol {
+    return networkInformation
   }
 
   var environment: DevEnvironment {
@@ -98,10 +103,18 @@ class ApplicationInfo: ApplicationInfoProtocol {
   }
 
   var appBuildVersion: String {
-    return Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+    return infoDict?["CFBundleVersion"] as? String ?? ""
   }
 
   var appDisplayVersion: String {
-    return Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? ""
+    return infoDict?["CFBundleShortVersionString"] as? String ?? ""
+  }
+
+  var osBuildVersion: String {
+    return FIRSESGetSysctlEntry("kern.osversion") ?? ""
+  }
+
+  var osDisplayVersion: String {
+    return GULAppEnvironmentUtil.systemVersion()
   }
 }

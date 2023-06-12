@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'FirebaseAppDistribution'
-  s.version          = '10.3.0-beta'
+  s.version          = '10.10.0-beta'
   s.summary          = 'App Distribution for Firebase iOS SDK.'
 
   s.description      = <<-DESC
@@ -34,7 +34,6 @@ iOS SDK for App Distribution for Firebase.
   s.dependency 'GoogleUtilities/AppDelegateSwizzler', '~> 7.8'
   s.dependency 'GoogleUtilities/UserDefaults', '~> 7.8'
   s.dependency 'FirebaseInstallations', '~> 10.0'
-  s.dependency 'GoogleDataTransport', '~> 9.2'
 
   s.pod_target_xcconfig = {
     'GCC_C_LANGUAGE_STANDARD' => 'c99',
@@ -47,6 +46,7 @@ iOS SDK for App Distribution for Firebase.
      'FirebaseAppDistribution/Tests/Unit*/*.[mh]',
      'FirebaseAppDistribution/Tests/Unit/Swift*/*.swift',
    ]
+   unit_tests.requires_app_host = true
    unit_tests.resources = 'FirebaseAppDistribution/Tests/Unit/Resources/*'
    unit_tests.dependency 'OCMock'
   end

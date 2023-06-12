@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'FirebaseAuth'
-  s.version          = '10.3.0'
+  s.version          = '10.10.0'
   s.summary          = 'Apple platform client for Firebase Authentication'
 
   s.description      = <<-DESC
@@ -39,6 +39,7 @@ supports email and password accounts, as well as several 3rd party authenticatio
     source + '**/*.[mh]',
     'FirebaseCore/Extension/*.h',
     'FirebaseAuth/Interop/*.h',
+    'FirebaseAppCheck/Interop/*.h',
   ]
   s.public_header_files = source + 'Public/FirebaseAuth/*.h'
   s.preserve_paths = [
@@ -51,6 +52,7 @@ supports email and password accounts, as well as several 3rd party authenticatio
   }
   s.framework = 'Security'
   s.ios.framework = 'SafariServices'
+  s.dependency 'FirebaseAppCheckInterop', '~> 10.0'
   s.dependency 'FirebaseCore', '~> 10.0'
   s.dependency 'GoogleUtilities/AppDelegateSwizzler', '~> 7.8'
   s.dependency 'GoogleUtilities/Environment', '~> 7.8'
@@ -81,6 +83,7 @@ supports email and password accounts, as well as several 3rd party authenticatio
         'FirebaseAuth/Tests/Unit/FIRVerifyClient*',
         'FirebaseAuth/Tests/Unit/FIRVerifyPhoneNumber*',
         'FirebaseAuth/Tests/Unit/FIROAuthProviderTests.m',
+        'FirebaseAuth/Tests/Unit/FIRMultiFactorResolverTests.m',
       ]
       unit_tests.tvos.exclude_files = [
         'FirebaseAuth/Tests/Unit/FIRAuthAPNSTokenManagerTests.m',
@@ -93,11 +96,19 @@ supports email and password accounts, as well as several 3rd party authenticatio
         'FirebaseAuth/Tests/Unit/FIRVerifyClient*',
         'FirebaseAuth/Tests/Unit/FIRVerifyPhoneNumber*',
         'FirebaseAuth/Tests/Unit/FIROAuthProviderTests.m',
+        'FirebaseAuth/Tests/Unit/FIRMultiFactorResolverTests.m',
       ]
       # app_host is needed for tests with keychain
       unit_tests.requires_app_host = true
       unit_tests.dependency 'OCMock'
       unit_tests.dependency 'HeartbeatLoggingTestUtils'
+
+      # This pre-processor directive is used to selectively disable keychain
+      # related code that blocks unit testing on macOS.
+      s.osx.pod_target_xcconfig = {
+        'GCC_PREPROCESSOR_DEFINITIONS' => 'FIREBASE_AUTH_MACOS_TESTING=1'
+      }
+
     end
   end
 end
