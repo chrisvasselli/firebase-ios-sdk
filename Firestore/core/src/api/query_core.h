@@ -204,7 +204,7 @@ class Query {
   // to the new Aggregate API
   /**
    * Creates a new `AggregateQuery` counting the number of documents matching
-   * this query. This API is preserved for backward-compatability with
+   * this query. This API is preserved for backward-compatibility with
    * the c++ SDK.
    *
    * @return The created `AggregateQuery`.
@@ -215,9 +215,6 @@ class Query {
   void ValidateNewFilter(const core::Filter& filter) const;
   void ValidateNewFieldFilter(const core::Query& query,
                               const core::FieldFilter& filter) const;
-  void ValidateNewOrderByPath(const model::FieldPath& field_path) const;
-  void ValidateOrderByField(const model::FieldPath& order_by_field,
-                            const model::FieldPath& inequality_field) const;
   void ValidateHasExplicitOrderByForLimitToLast() const;
   /**
    * Validates that the value passed into a disjunctive filter satisfies all

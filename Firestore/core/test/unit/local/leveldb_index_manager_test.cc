@@ -361,6 +361,58 @@ TEST_F(LevelDbIndexManagerTest, CursorCannotExpandResult) {
   });
 }
 
+TEST_F(LevelDbIndexManagerTest, FiltersOnTheSameField) {
+  persistence_->Run("TestFiltersOnTheSameField", [&]() {
+    index_manager_->Start();
+
+    index_manager_->AddFieldIndex(
+        MakeFieldIndex("coll", "a", model::Segment::kAscending));
+    index_manager_->AddFieldIndex(
+        MakeFieldIndex("coll", "a", model::Segment::kAscending, "b",
+                       model::Segment::kAscending));
+    AddDoc("coll/val1", Map("a", 1, "b", 1));
+    AddDoc("coll/val2", Map("a", 2, "b", 2));
+    AddDoc("coll/val3", Map("a", 3, "b", 3));
+    AddDoc("coll/val4", Map("a", 4, "b", 4));
+
+    {
+      auto query = Query("coll")
+                       .AddingFilter(Filter("a", ">", 1))
+                       .AddingFilter(Filter("a", "==", 2));
+      VerifyResults(query, {"coll/val2"});
+    }
+    {
+      auto query = Query("coll")
+                       .AddingFilter(Filter("a", "<=", 1))
+                       .AddingFilter(Filter("a", "==", 2));
+      VerifyResults(query, {});
+    }
+    {
+      auto query = Query("coll")
+                       .AddingFilter(Filter("a", ">", 1))
+                       .AddingFilter(Filter("a", "==", 2))
+                       .AddingOrderBy(OrderBy("a"));
+      VerifyResults(query, {"coll/val2"});
+    }
+    {
+      auto query = Query("coll")
+                       .AddingFilter(Filter("a", ">", 1))
+                       .AddingFilter(Filter("a", "==", 2))
+                       .AddingOrderBy(OrderBy("a"))
+                       .AddingOrderBy(OrderBy("__name__", "desc"));
+      VerifyResults(query, {"coll/val2"});
+    }
+    {
+      auto query = Query("coll")
+                       .AddingFilter(Filter("a", ">", 1))
+                       .AddingFilter(Filter("a", "==", 3))
+                       .AddingOrderBy(OrderBy("a"))
+                       .AddingOrderBy(OrderBy("b", "desc"));
+      VerifyResults(query, {"coll/val3"});
+    }
+  });
+}
+
 TEST_F(LevelDbIndexManagerTest, EqualityFilter) {
   persistence_->Run("TestEqualityFilter", [&]() {
     index_manager_->Start();
@@ -1498,6 +1550,60 @@ TEST_F(LevelDbIndexManagerTest, IndexTypeForOrQueries) {
                        .WithLimitToLast(2);
     ValidateIndexType(query11, IndexManager::IndexType::PARTIAL);
   });
+}
+
+TEST_F(LevelDbIndexManagerTest,
+       CreateTargetIndexesCreatesFullIndexesForEachSubTarget) {
+  persistence_->Run(
+      "TestCreateTargetIndexesCreatesFullIndexesForEachSubTarget", [&]() {
+        index_manager_->Start();
+
+        auto query = Query("coll").AddingFilter(
+            OrFilters({Filter("a", "==", 1), Filter("b", "==", 2),
+                       Filter("c", "==", 3)}));
+
+        auto subQuery1 = Query("coll").AddingFilter(Filter("a", "==", 1));
+        auto subQuery2 = Query("coll").AddingFilter(Filter("b", "==", 2));
+        auto subQuery3 = Query("coll").AddingFilter(Filter("c", "==", 3));
+
+        ValidateIndexType(query, IndexManager::IndexType::NONE);
+        ValidateIndexType(subQuery1, IndexManager::IndexType::NONE);
+        ValidateIndexType(subQuery2, IndexManager::IndexType::NONE);
+        ValidateIndexType(subQuery3, IndexManager::IndexType::NONE);
+
+        index_manager_->CreateTargetIndexes(query.ToTarget());
+
+        ValidateIndexType(query, IndexManager::IndexType::FULL);
+        ValidateIndexType(subQuery1, IndexManager::IndexType::FULL);
+        ValidateIndexType(subQuery2, IndexManager::IndexType::FULL);
+        ValidateIndexType(subQuery3, IndexManager::IndexType::FULL);
+      });
+}
+
+TEST_F(LevelDbIndexManagerTest,
+       CreateTargetIndexesUpgradesPartialIndexToFullIndex) {
+  persistence_->Run(
+      "TestCreateTargetIndexesUpgradesPartialIndexToFullIndex", [&]() {
+        index_manager_->Start();
+
+        auto query = Query("coll").AddingFilter(
+            AndFilters({Filter("a", "==", 1), Filter("b", "==", 2)}));
+
+        auto subQuery1 = Query("coll").AddingFilter(Filter("a", "==", 1));
+        auto subQuery2 = Query("coll").AddingFilter(Filter("b", "==", 2));
+
+        index_manager_->CreateTargetIndexes(subQuery1.ToTarget());
+
+        ValidateIndexType(query, IndexManager::IndexType::PARTIAL);
+        ValidateIndexType(subQuery1, IndexManager::IndexType::FULL);
+        ValidateIndexType(subQuery2, IndexManager::IndexType::NONE);
+
+        index_manager_->CreateTargetIndexes(query.ToTarget());
+
+        ValidateIndexType(query, IndexManager::IndexType::FULL);
+        ValidateIndexType(subQuery1, IndexManager::IndexType::FULL);
+        ValidateIndexType(subQuery2, IndexManager::IndexType::NONE);
+      });
 }
 
 }  // namespace local
