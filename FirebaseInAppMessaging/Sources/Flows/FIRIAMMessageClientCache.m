@@ -15,7 +15,7 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS || TARGET_OS_TV
+#if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_VISION
 
 #import "FirebaseCore/Extension/FirebaseCoreInternal.h"
 
@@ -108,15 +108,15 @@
     }
   }
 
-  if (self.analycisEventDislayCheckFlow) {
+  if (self.analyticsEventDisplayCheckFlow) {
     if ([self.firebaseAnalyticEventsToWatch count] > 0) {
       FIRLogDebug(kFIRLoggerInAppMessaging, @"I-IAM160010",
                   @"There are analytics event trigger based messages, enable listening");
-      [self.analycisEventDislayCheckFlow start];
+      [self.analyticsEventDisplayCheckFlow start];
     } else {
       FIRLogDebug(kFIRLoggerInAppMessaging, @"I-IAM160011",
                   @"No analytics event trigger based messages, disable listening");
-      [self.analycisEventDislayCheckFlow stop];
+      [self.analyticsEventDisplayCheckFlow stop];
     }
   }
 }
@@ -126,7 +126,9 @@
 }
 
 - (BOOL)hasTestMessage {
-  return self.testMessages.count > 0;
+  @synchronized(self) {
+    return self.testMessages.count > 0;
+  }
 }
 
 - (nullable FIRIAMMessageDefinition *)nextOnAppLaunchDisplayMsg {
@@ -135,7 +137,7 @@
 
 - (nullable FIRIAMMessageDefinition *)nextOnAppOpenDisplayMsg {
   @synchronized(self) {
-    // always first check test message which always have higher prirority
+    // always first check test message which always have higher priority
     if (self.testMessages.count > 0) {
       FIRIAMMessageDefinition *testMessage = self.testMessages[0];
       // always remove test message right away when being fetched for display
@@ -236,4 +238,4 @@
 }
 @end
 
-#endif  // TARGET_OS_IOS || TARGET_OS_TV
+#endif  // TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_VISION

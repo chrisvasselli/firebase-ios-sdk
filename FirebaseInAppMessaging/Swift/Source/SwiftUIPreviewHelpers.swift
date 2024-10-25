@@ -14,7 +14,9 @@
 
 import UIKit
 
-import FirebaseInAppMessaging
+#if SWIFT_PACKAGE
+  @_exported import FirebaseInAppMessagingInternal
+#endif // SWIFT_PACKAGE
 
 @available(iOS 13.0, tvOS 13.0, *)
 @available(iOSApplicationExtension, unavailable)
@@ -94,7 +96,7 @@ public enum InAppMessagingPreviewHelpers {
     }
 
     var actionButton: InAppMessagingActionButton?
-    if let buttonText = buttonText,
+    if let buttonText,
        let buttonTextColor = buttonTextColor,
        let buttonBackgroundColor = buttonBackgroundColor {
       actionButton = InAppMessagingActionButton(buttonText: buttonText,

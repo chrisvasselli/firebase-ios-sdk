@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
 import FirebaseSessions
+import Foundation
 
 // Avoids exposing internal FirebaseCore APIs to Swift users.
 @_implementationOnly import FirebaseCoreExtension
@@ -44,16 +44,14 @@ protocol MockSubscriberSDKProtocol {
 
     let sessions = ComponentType<SessionsProvider>.instance(for: SessionsProvider.self,
                                                             in: app.container)
-    sessions.register(subscriber: self)
+    sessions?.register(subscriber: self)
   }
 
   // MARK: - Library Conformance
 
   static func componentsToRegister() -> [Component] {
-    let sessionsDependency = Dependency(with: SessionsProvider.self, isRequired: false)
     return [Component(MockSubscriberSDKProtocol.self,
-                      instantiationTiming: .alwaysEager,
-                      dependencies: [sessionsDependency]) { container, isCacheable in
+                      instantiationTiming: .alwaysEager) { container, isCacheable in
         // Sessions SDK only works for the default app
         guard let app = container.app, app.isDefaultApp else { return nil }
         isCacheable.pointee = true

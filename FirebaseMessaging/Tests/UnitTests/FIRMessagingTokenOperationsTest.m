@@ -94,7 +94,16 @@ static NSString *kRegistrationToken = @"token-12345";
 
 - (void)log {
   // This API should not be used by the below tests because the Messaging
-  // SDK does not log heartbeats in it's networking context.
+  // SDK does not log heartbeats in its networking context.
+  [self doesNotRecognizeSelector:_cmd];
+}
+
+- (NSString *_Nullable)headerValue {
+  return @"unimplemented";
+}
+
+- (void)asyncHeaderValueWithCompletionHandler:
+    (nonnull void (^)(NSString *_Nullable))completionHandler {
   [self doesNotRecognizeSelector:_cmd];
 }
 

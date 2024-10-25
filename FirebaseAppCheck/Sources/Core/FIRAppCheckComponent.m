@@ -16,7 +16,7 @@
 
 #import <Foundation/Foundation.h>
 
-@import FirebaseAppCheckInterop;
+#import <FirebaseAppCheckInterop/FirebaseAppCheckInterop.h>
 
 #import "FirebaseAppCheck/Sources/Core/FIRAppCheck+Internal.h"
 #import "FirebaseAppCheck/Sources/Public/FirebaseAppCheck/FIRAppCheck.h"
@@ -46,7 +46,6 @@ NS_ASSUME_NONNULL_BEGIN
   FIRComponent *appCheckProvider =
       [FIRComponent componentWithProtocol:@protocol(FIRAppCheckInterop)
                       instantiationTiming:FIRInstantiationTimingAlwaysEager
-                             dependencies:@[]
                             creationBlock:creationBlock];
   return @[ appCheckProvider ];
 }

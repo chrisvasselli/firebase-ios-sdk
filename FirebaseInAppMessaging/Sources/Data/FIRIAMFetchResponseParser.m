@@ -15,7 +15,7 @@
  */
 
 #import <TargetConditionals.h>
-#if TARGET_OS_IOS || TARGET_OS_TV
+#if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_VISION
 
 #import "FirebaseCore/Extension/FirebaseCoreInternal.h"
 
@@ -151,7 +151,7 @@ NS_EXTENSION_UNAVAILABLE("Firebase In App Messaging is not supported for iOS ext
     NSString *messageID = payloadNode[@"campaignId"];
     if (!messageID) {
       FIRLogWarning(kFIRLoggerInAppMessaging, @"I-IAM900010",
-                    @"messsage id is missing in message node %@", messageNode);
+                    @"message id is missing in message node %@", messageNode);
       return nil;
     }
 
@@ -438,4 +438,4 @@ NS_EXTENSION_UNAVAILABLE("Firebase In App Messaging is not supported for iOS ext
 
 @end
 
-#endif  // TARGET_OS_IOS || TARGET_OS_TV
+#endif  // TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_VISION

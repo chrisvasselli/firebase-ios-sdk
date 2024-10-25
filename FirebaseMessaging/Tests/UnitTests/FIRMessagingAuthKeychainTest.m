@@ -39,7 +39,7 @@ static NSString *const kSecret = @"test-secret";
 static NSString *const kToken2 = @"c8oEXUYIl3s:APA91bHtJMs_dZ2lXYXIcwsC47abYIuWhEJ_CshY2PJRjVuI_"
                                  @"H659iYUwfmNNghnZVkCmeUdKDSrK8xqVb0PVHxyAW391Ynp2NchMB87kJWb3BS0z"
                                  @"ud6Ej_xDES_oc353eFRvt0E6NXefDmrUCpBY8y89_1eVFFfiA";
-#endif
+#endif  // TARGET_OS_IOS || TARGET_OS_TV
 static NSString *const kFirebaseAppID = @"abcdefg:ios:QrjxYS1BdtxHdVVnQKuxlF3Z0QO";
 
 static NSString *const kBundleID1 = @"com.google.fcm.dev";
@@ -71,7 +71,7 @@ static NSString *const kBundleID2 = @"com.google.abtesting.dev";
 - (void)testKeyChainNoCorruptionWithUniqueAccount {
 // macOS only support one service and one account.
 #if TARGET_OS_IOS || TARGET_OS_TV
-  XCTestExpectation *noCurruptionExpectation =
+  XCTestExpectation *noCorruptionExpectation =
       [self expectationWithDescription:@"No corruption between different accounts."];
   // Create a keychain with a service and a unique account
   NSString *service = [NSString stringWithFormat:@"%@:%@", kAuthorizedEntity, kScope];
@@ -101,16 +101,19 @@ static NSString *const kBundleID2 = @"com.google.abtesting.dev";
                        // Now query the token and compare, they should not corrupt
                        // each other.
                        NSData *data1 = [weakKeychain dataForService:service account:account1];
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
                        FIRMessagingTokenInfo *tokenInfo1 =
-                           [NSKeyedUnarchiver unarchiveObjectWithData:data1];
+                           [NSKeyedUnarchiver unarchivedObjectOfClass:FIRMessagingTokenInfo.class
+                                                             fromData:data1
+                                                                error:&error];
+                       XCTAssertNil(error);
                        XCTAssertEqualObjects(kToken1, tokenInfo1.token);
 
                        NSData *data2 = [weakKeychain dataForService:service account:account2];
                        FIRMessagingTokenInfo *tokenInfo2 =
-                           [NSKeyedUnarchiver unarchiveObjectWithData:data2];
-#pragma clang diagnostic pop
+                           [NSKeyedUnarchiver unarchivedObjectOfClass:FIRMessagingTokenInfo.class
+                                                             fromData:data2
+                                                                error:&error];
+                       XCTAssertNil(error);
                        XCTAssertEqualObjects(kToken2, tokenInfo2.token);
                        // Also check the cache data.
                        XCTAssertEqual(weakKeychain.cachedKeychainData.count, 1);
@@ -131,17 +134,17 @@ static NSString *const kBundleID2 = @"com.google.abtesting.dev";
                                                         account:@"*"
                                                         handler:^(NSError *_Nonnull error) {
                                                           XCTAssertNil(error);
-                                                          [noCurruptionExpectation fulfill];
+                                                          [noCorruptionExpectation fulfill];
                                                         }];
                      }];
             }];
   [self waitForExpectationsWithTimeout:1.0 handler:NULL];
-#endif
+#endif  // TARGET_OS_IOS || TARGET_OS_TV
 }
 
 - (void)testKeyChainNoCorruptionWithUniqueService {
 #if TARGET_OS_IOS || TARGET_OS_TV
-  XCTestExpectation *noCurruptionExpectation =
+  XCTestExpectation *noCorruptionExpectation =
       [self expectationWithDescription:@"No corruption between different services."];
   // Create a keychain with a service and a unique account
   NSString *service1 = [NSString stringWithFormat:@"%@:%@", kAuthorizedEntity, kScope];
@@ -175,11 +178,11 @@ static NSString *const kBundleID2 = @"com.google.abtesting.dev";
                     // Now query the token and compare, they should not corrupt
                     // each other.
                     NSData *data1 = [weakKeychain dataForService:service1 account:account];
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
                     FIRMessagingTokenInfo *tokenInfo1 =
-                        [NSKeyedUnarchiver unarchiveObjectWithData:data1];
-#pragma clang diagnostic pop
+                        [NSKeyedUnarchiver unarchivedObjectOfClass:FIRMessagingTokenInfo.class
+                                                          fromData:data1
+                                                             error:&error];
+                    XCTAssertNil(error);
                     XCTAssertEqualObjects(kToken1, tokenInfo1.token);
 
                     NSData *data2 = [weakKeychain dataForService:service2 account:account];
@@ -206,12 +209,12 @@ static NSString *const kBundleID2 = @"com.google.abtesting.dev";
                                                      account:@"*"
                                                      handler:^(NSError *_Nonnull error) {
                                                        XCTAssertNil(error);
-                                                       [noCurruptionExpectation fulfill];
+                                                       [noCorruptionExpectation fulfill];
                                                      }];
                   }];
          }];
   [self waitForExpectationsWithTimeout:1.0 handler:NULL];
-#endif
+#endif  // TARGET_OS_IOS || TARGET_OS_TV
 }
 
 // Skip keychain tests on Catalyst and macOS. Tests are skipped because they
@@ -401,7 +404,7 @@ static NSString *const kBundleID2 = @"com.google.abtesting.dev";
   XCTAssertNotNil(keychain.cachedKeychainData[service][account2]);
 }
 
-#endif
+#endif  // !TARGET_OS_MACCATALYST && !TARGET_OS_OSX
 
 #pragma mark - helper function
 - (NSData *)tokenDataWithAuthorizedEntity:(NSString *)authorizedEntity
@@ -413,11 +416,13 @@ static NSString *const kBundleID2 = @"com.google.abtesting.dev";
                                                         token:token
                                                    appVersion:@"1.0"
                                                 firebaseAppID:kFirebaseAppID];
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  return [NSKeyedArchiver archivedDataWithRootObject:tokenInfo];
-#pragma clang diagnostic pop
+  NSError *error;
+  NSData *archive = [NSKeyedArchiver archivedDataWithRootObject:tokenInfo
+                                          requiringSecureCoding:YES
+                                                          error:&error];
+  XCTAssertNil(error);
+  return archive;
 }
 @end
 
-#endif  // TARGET_OS_MACCATALYST
+#endif  // !TARGET_OS_MACCATALYST && !SWIFT_PACKAGE

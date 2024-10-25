@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
 import FirebaseCore
+import Foundation
 import GoogleDataTransport
 
 /// Extension to set Firebase app info.
@@ -63,14 +63,14 @@ extension ModelDownloadLogEvent {
                          downloadFailureStatus: Int64? = 0, modelOptions: ModelOptions) {
     downloadStatus = status
     self.errorCode = errorCode
-    if let roughDuration = roughDownloadDuration {
-      roughDownloadDurationMs = roughDuration
+    if let roughDownloadDuration {
+      roughDownloadDurationMs = roughDownloadDuration
     }
-    if let exactDuration = exactDownloadDuration {
-      exactDownloadDurationMs = exactDuration
+    if let exactDownloadDuration {
+      exactDownloadDurationMs = exactDownloadDuration
     }
-    if let failureStatus = downloadFailureStatus {
-      self.downloadFailureStatus = failureStatus
+    if let downloadFailureStatus {
+      self.downloadFailureStatus = downloadFailureStatus
     }
     options = modelOptions
   }
@@ -124,29 +124,29 @@ class TelemetryLogger {
   private let app: FirebaseApp
 
   /// Transport for Firelog events.
-  private let fllTransport: GDTCORTransport
+  private let cctTransport: GDTCORTransport
 
   /// Init logger, could be nil if unable to get event transport.
   init?(app: FirebaseApp) {
     self.app = app
-    guard let fllTransport = GDTCORTransport(
+    guard let cctTransport = GDTCORTransport(
       mappingID: mappingID,
       transformers: nil,
-      target: GDTCORTarget.FLL
+      target: GDTCORTarget.CCT
     ) else {
       DeviceLogger.logEvent(level: .debug,
                             message: TelemetryLogger.ErrorDescription.initTelemetryLogger,
                             messageCode: .telemetryInitError)
       return nil
     }
-    self.fllTransport = fllTransport
+    self.cctTransport = cctTransport
   }
 
   /// Log events to Firelog.
   private func logModelEvent(event: FirebaseMlLogEvent) {
-    let eventForTransport: GDTCOREvent = fllTransport.eventForTransport()
+    let eventForTransport: GDTCOREvent = cctTransport.eventForTransport()
     eventForTransport.dataObject = FBMLDataObject(event: event)
-    fllTransport.sendTelemetryEvent(eventForTransport)
+    cctTransport.sendTelemetryEvent(eventForTransport)
   }
 
   /// Log model deleted event to Firelog.

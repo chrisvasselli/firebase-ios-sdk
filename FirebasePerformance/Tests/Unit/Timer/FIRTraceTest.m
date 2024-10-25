@@ -14,6 +14,8 @@
 
 #import <XCTest/XCTest.h>
 
+#import <GoogleUtilities/GULUserDefaults.h>
+
 #import "FirebasePerformance/Sources/AppActivity/FPRAppActivityTracker.h"
 #import "FirebasePerformance/Sources/AppActivity/FPRSessionManager.h"
 #import "FirebasePerformance/Sources/Common/FPRConstants.h"
@@ -99,7 +101,7 @@
       [[FPRRemoteConfigFlags alloc] initWithRemoteConfig:(FIRRemoteConfig *)remoteConfig];
   configurations.remoteConfigFlags = configFlags;
 
-  NSUserDefaults *userDefaults = [[NSUserDefaults alloc] init];
+  GULUserDefaults *userDefaults = [[GULUserDefaults alloc] init];
   configFlags.userDefaults = userDefaults;
 
   NSString *configKey = [NSString stringWithFormat:@"%@.%@", kFPRConfigPrefix, @"fpr_enabled"];
@@ -237,7 +239,7 @@
   XCTAssertNil([trace.counters objectForKey:@"testing"]);
 }
 
-/** Validates that calling get on a metric returns 0 if it hasnt been reviously set. */
+/** Validates that calling get on a metric returns 0 if it hasn't been reviously set. */
 - (void)testGetMetricWhenSetHasntBeenCalledReturnsZero {
   FIRTrace *trace = [[FIRTrace alloc] initWithName:@"Random"];
   int64_t metricValue = [trace valueForIntMetric:@"testing"];

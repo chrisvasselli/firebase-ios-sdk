@@ -12,31 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
 import FirebaseAppCheckInterop
 import FirebaseAuthInterop
 import FirebaseMessagingInterop
+import Foundation
 
-/// FunctionsContext is a helper class for gathering metadata for a function call.
-internal class FunctionsContext: NSObject {
+/// `FunctionsContext` is a helper object that holds metadata for a function call.
+struct FunctionsContext {
   let authToken: String?
   let fcmToken: String?
   let appCheckToken: String?
   let limitedUseAppCheckToken: String?
-
-  init(authToken: String?, fcmToken: String?, appCheckToken: String?,
-       limitedUseAppCheckToken: String?) {
-    self.authToken = authToken
-    self.fcmToken = fcmToken
-    self.appCheckToken = appCheckToken
-    self.limitedUseAppCheckToken = limitedUseAppCheckToken
-  }
 }
 
-internal class FunctionsContextProvider: NSObject {
-  private var auth: AuthInterop?
-  private var messaging: MessagingInterop?
-  private var appCheck: AppCheckInterop?
+struct FunctionsContextProvider {
+  private let auth: AuthInterop?
+  private let messaging: MessagingInterop?
+  private let appCheck: AppCheckInterop?
 
   init(auth: AuthInterop?, messaging: MessagingInterop?, appCheck: AppCheckInterop?) {
     self.auth = auth
@@ -51,8 +43,8 @@ internal class FunctionsContextProvider: NSObject {
 //
 //  }
 
-  internal func getContext(options: HTTPSCallableOptions? = nil,
-                           _ completion: @escaping ((FunctionsContext, Error?) -> Void)) {
+  func getContext(options: HTTPSCallableOptions? = nil,
+                  _ completion: @escaping ((FunctionsContext, Error?) -> Void)) {
     let dispatchGroup = DispatchGroup()
 
     var authToken: String?
@@ -60,7 +52,7 @@ internal class FunctionsContextProvider: NSObject {
     var error: Error?
     var limitedUseAppCheckToken: String?
 
-    if let auth = auth {
+    if let auth {
       dispatchGroup.enter()
 
       auth.getToken(forcingRefresh: false) { token, authError in
@@ -70,15 +62,21 @@ internal class FunctionsContextProvider: NSObject {
       }
     }
 
-    if let appCheck = appCheck {
+    if let appCheck {
       dispatchGroup.enter()
 
       if options?.requireLimitedUseAppCheckTokens == true {
-        appCheck.getLimitedUseToken? { tokenResult in
-          // Send only valid token to functions.
-          if tokenResult.error == nil {
-            limitedUseAppCheckToken = tokenResult.token
+        // `getLimitedUseToken(completion:)` is an optional protocol method.
+        // If it’s not implemented, we still need to leave the dispatch group.
+        if let limitedUseTokenClosure = appCheck.getLimitedUseToken {
+          limitedUseTokenClosure { tokenResult in
+            // Send only valid token to functions.
+            if tokenResult.error == nil {
+              limitedUseAppCheckToken = tokenResult.token
+            }
+            dispatchGroup.leave()
           }
+        } else {
           dispatchGroup.leave()
         }
       } else {

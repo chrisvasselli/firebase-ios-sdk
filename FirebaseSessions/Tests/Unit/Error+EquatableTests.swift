@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import XCTest
 @testable import FirebaseSessions
+import XCTest
 
 /// This file and extension exist for ease of testing. Without this, you cannot use
 /// XCTAssertEqual on errors, which means you need to do switches whenever you
@@ -23,7 +23,7 @@ import XCTest
 /// This class exists for unit testing purposes only. The SDK should use switch internally
 /// when handling errors, because equating errors is prone to issues (eg. we're just comparing
 /// the types, but not the values).
-extension FirebaseSessionsError: Equatable {
+extension FirebaseSessionsError: Swift.Equatable {
   public static func == (lhs: FirebaseSessions.FirebaseSessionsError,
                          rhs: FirebaseSessions.FirebaseSessionsError) -> Bool {
     return String(reflecting: lhs) == String(reflecting: rhs)

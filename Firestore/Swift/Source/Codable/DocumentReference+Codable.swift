@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import FirebaseFirestore
+#if SWIFT_PACKAGE
+  @_exported import FirebaseFirestoreInternalWrapper
+#else
+  @_exported import FirebaseFirestoreInternal
+#endif // SWIFT_PACKAGE
 
 /** Mark DocumentReference to conform to Codable. */
 
@@ -29,7 +33,7 @@ import FirebaseFirestore
 private protocol CodableDocumentReference: Codable {}
 
 /**
- * DocumentReference's codable implmentation will just throw for most
+ * DocumentReference's codable implementation will just throw for most
  * encoder/decoder however. It is only meant to be encoded by Firestore.Encoder/Firestore.Decoder.
  */
 extension CodableDocumentReference {
@@ -46,4 +50,4 @@ extension CodableDocumentReference {
   }
 }
 
-extension DocumentReference: CodableDocumentReference {}
+extension FirebaseFirestore.DocumentReference: FirebaseFirestore.CodableDocumentReference {}

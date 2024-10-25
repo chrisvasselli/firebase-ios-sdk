@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import XCTest
 @testable import FirebaseCoreInternal
+import XCTest
 
 class HeartbeatControllerTests: XCTestCase {
   // 2021-11-01 @ 00:00:00 (EST)
@@ -54,6 +54,45 @@ class HeartbeatControllerTests: XCTestCase {
       }
       """
     )
+
+    assertHeartbeatControllerFlushesEmptyPayload(controller)
+  }
+
+  func testLogAndFlushAsync() throws {
+    // Given
+    let controller = HeartbeatController(
+      storage: HeartbeatStorageFake(),
+      dateProvider: { self.date }
+    )
+    let expectation = expectation(description: #function)
+
+    assertHeartbeatControllerFlushesEmptyPayload(controller)
+
+    // When
+    controller.log("dummy_agent")
+    controller.flushAsync { heartbeatPayload in
+      // Then
+      do {
+        try HeartbeatLoggingTestUtils.assertEqualPayloadStrings(
+          heartbeatPayload.headerValue(),
+          """
+          {
+            "version": 2,
+            "heartbeats": [
+              {
+                "agent": "dummy_agent",
+                "dates": ["2021-11-01"]
+              }
+            ]
+          }
+          """
+        )
+        expectation.fulfill()
+      } catch {
+        XCTFail("Unexpected error: \(error)")
+      }
+    }
+    waitForExpectations(timeout: 1.0)
 
     assertHeartbeatControllerFlushesEmptyPayload(controller)
   }
@@ -191,7 +230,7 @@ class HeartbeatControllerTests: XCTestCase {
     let payload = heartbeatController.flush()
 
     // Then
-    // Note below how the date was intepreted as UTC - 2021-11-02.
+    // Note below how the date was interpreted as UTC - 2021-11-02.
     try HeartbeatLoggingTestUtils.assertEqualPayloadStrings(
       payload.headerValue(),
       """
@@ -403,5 +442,16 @@ private class HeartbeatStorageFake: HeartbeatStorageProtocol {
     let oldHeartbeatsBundle = heartbeatsBundle
     heartbeatsBundle = transform(heartbeatsBundle)
     return oldHeartbeatsBundle
+  }
+
+  func getAndSetAsync(using transform: @escaping (FirebaseCoreInternal.HeartbeatsBundle?)
+    -> FirebaseCoreInternal.HeartbeatsBundle?,
+    completion: @escaping (Result<
+      FirebaseCoreInternal.HeartbeatsBundle?,
+      any Error
+    >) -> Void) {
+    let oldHeartbeatsBundle = heartbeatsBundle
+    heartbeatsBundle = transform(heartbeatsBundle)
+    completion(.success(oldHeartbeatsBundle))
   }
 }

@@ -14,9 +14,9 @@
 
 #if canImport(Combine) && swift(>=5.0)
 
-  import Foundation
   import Combine
   import FirebaseStorage
+  import Foundation
 
   @available(swift 5.0)
   @available(iOS 13.0, macOS 10.15, macCatalyst 13.0, tvOS 13.0, watchOS 6.0, *)
@@ -276,7 +276,7 @@
     func delete() -> Future<Bool, Error> {
       Future<Bool, Error> { promise in
         self.delete { error in
-          if let error = error {
+          if let error {
             promise(.failure(error))
           } else {
             promise(.success(true))

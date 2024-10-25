@@ -1,5 +1,27 @@
+# 11.0.0
+- [fixed] Completed Messaging's transition to NSSecureCoding (#12343).
+
+# 10.29.0
+- [fixed] Renamed "initWithFileName" internal method that was causing submission issues for some
+  users. (#13134).
+- [fixed] Fixed the APS Environment key on visionOS. (#13173)
+
+# 10.27.0
+- [fixed] Fixed bug preventing Messaging from working with a custom sqlite3
+  dependency (#12900).
+
+# 10.23.0
+- [fixed] [CocoaPods] Fix "no rule" warning when running `pod install`. (#12511)
+
+# 10.20.0
+- [fixed] Fix 10.19.0 regression where the FCM registration token was nil at first app start
+  after update from 10.19.0 or earlier. (#12245)
+
+# 10.19.0
+- [changed] Adopt NSSecureCoding for internal classes. (#12075)
+
 # 10.12.0
-- [changed] Removing fiam scoped tokens set by old FIAM SDK(s) from keychain if exisits (b/284207019).
+- [changed] Removing fiam scoped tokens set by old FIAM SDK(s) from keychain if exists (b/284207019).
 
 # 10.6.0
 - [fixed] Configure flow validates existence of an APNS token before fetching an FCM token (#10742). This also addresses the scenario 1 mentioned in the comment - https://github.com/firebase/firebase-ios-sdk/issues/10679#issuecomment-1402776795
@@ -81,7 +103,7 @@
 - [changed] Changed the location of source under FirebaseMessaging folder to fit the current repository organization. (#5476)
 
 # 4.3.1
-- [fixed] Fixed an issue that when a token is deleted, the token refresh notificaiton and delegate is not triggered. (#5338)
+- [fixed] Fixed an issue that when a token is deleted, the token refresh notification and delegate is not triggered. (#5338)
 
 # 4.3.0
 - [changed] Deprecated FCM direct channel messaging via `shouldEstablishDirectChannel`. Instead, use APNs for downstream message delivery. Add `content_available` key to your payload if you want to continue use legacy APIs, but we strongly recommend HTTP v1 API as it provides full APNs support. The deprecated API will be removed in Firebase 7. (#4710)
@@ -135,11 +157,11 @@
 - [feature] Adding macOS support for Messaging. You can now send push notification to your mac app with Firebase Messaging.(#2880)
 
 # 4.0.2
-- [fixed] Disable data protection when opening the Rmq2PeristentStore. (#2963)
+- [fixed] Disable data protection when opening the Rmq2PersistentStore. (#2963)
 
 # 4.0.1
 - [fixed] Fixed race condition checkin is deleted before writing during app start. This cleans up the corrupted checkin and fixes #2438. (#2860)
-- [fixed] Separete APNS proxy methods in GULAppDelegateSwizzler so developers don't need to swizzle APNS related method unless explicitly requested, this fixes #2807. (#2835)
+- [fixed] Separate APNS proxy methods in GULAppDelegateSwizzler so developers don't need to swizzle APNS related method unless explicitly requested, this fixes #2807. (#2835)
 - [changed] Clean up code. Remove extra layer of class. (#2853)
 
 # 4.0.0

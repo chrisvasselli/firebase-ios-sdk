@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import FirebaseFirestore
+#if SWIFT_PACKAGE
+  @_exported import FirebaseFirestoreInternalWrapper
+#else
+  @_exported import FirebaseFirestoreInternal
+#endif // SWIFT_PACKAGE
 import FirebaseSharedSwift
 import Foundation
 
@@ -89,7 +93,7 @@ public extension Firestore {
 
     public func decode<T: Decodable>(_ t: T.Type, from data: Any,
                                      in reference: DocumentReference?) throws -> T {
-      if let reference = reference {
+      if let reference {
         userInfo[CodingUserInfoKey.documentRefUserInfoKey] = reference
       }
       return try decode(T.self, from: data)

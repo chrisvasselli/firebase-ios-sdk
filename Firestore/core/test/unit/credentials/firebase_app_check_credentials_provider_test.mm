@@ -16,11 +16,11 @@
 
 #include "Firestore/core/src/credentials/firebase_app_check_credentials_provider_apple.h"
 
+#import <FirebaseAppCheckInterop/FirebaseAppCheckInterop.h>
+
 #include <chrono>  // NOLINT(build/c++11)
 #include <future>  // NOLINT(build/c++11)
 
-#import "FirebaseAppCheck/Interop/FIRAppCheckInterop.h"
-#import "FirebaseAppCheck/Interop/FIRAppCheckTokenResultInterop.h"
 #import "FirebaseCore/Extension/FIRAppInternal.h"
 
 #include "Firestore/core/test/unit/testutil/app_testing.h"
@@ -236,7 +236,7 @@ TEST(FirebaseAppCheckCredentialsProviderTest,
         }
       });
 
-  // Sending this notifcation would cause a crash if it was processed in the
+  // Sending this notification would cause a crash if it was processed in the
   // AppCheck notification handlder since AppCheck expects the userInfo object
   // to an NSDictionary.
   id userInfo = @"this_should_be_a_dictionary";

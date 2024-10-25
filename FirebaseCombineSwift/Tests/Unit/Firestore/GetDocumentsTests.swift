@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
+import Combine
 import FirebaseCombineSwift
 import FirebaseFirestoreTestingSupport
-import Combine
+import Foundation
 import XCTest
 
 class GetDocumentsTests: XCTestCase {
+  let expectationTimeout: TimeInterval = 2
   class MockQuery: QueryFake {
     var mockGetDocuments: () throws -> QuerySnapshot = {
       fatalError("You need to implement \(#function) in your mock.")

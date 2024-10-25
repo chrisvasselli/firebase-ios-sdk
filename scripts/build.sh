@@ -52,6 +52,7 @@ platform can be one of:
   tvOS
   watchOS
   catalyst
+  visionOS
 method can be one of:
   xcodebuild (default)
   cmake
@@ -92,7 +93,7 @@ database_emulator="${scripts_dir}/run_database_emulator.sh"
 system=$(uname -s)
 case "$system" in
   Darwin)
-    xcode_version=$(xcodebuild -version | head -n 1)
+    xcode_version=$(xcodebuild -version | grep Xcode)
     xcode_version="${xcode_version/Xcode /}"
     xcode_major="${xcode_version/.*/}"
     ;;
@@ -137,15 +138,32 @@ function ExportLogs() {
   python "${scripts_dir}/xcresult_logs.py" "$@"
 }
 
-if [[ "$xcode_major" -lt 11 ]]; then
+if [[ "$xcode_major" -lt 15 ]]; then
   ios_flags=(
     -sdk 'iphonesimulator'
-    -destination 'platform=iOS Simulator,name=iPhone 7'
+    -destination 'platform=iOS Simulator,name=iPhone 14'
+  )
+  watchos_flags=(
+    -sdk 'watchsimulator'
+    -destination 'platform=watchOS Simulator,name=Apple Watch Series 7 (45mm)'
+  )
+elif [[ "$xcode_major" -lt 16 ]]; then
+  ios_flags=(
+    -sdk 'iphonesimulator'
+    -destination 'platform=iOS Simulator,name=iPhone 15'
+  )
+  watchos_flags=(
+    -sdk 'watchsimulator'
+    -destination 'platform=watchOS Simulator,name=Apple Watch Series 7 (45mm)'
   )
 else
   ios_flags=(
     -sdk 'iphonesimulator'
-    -destination 'platform=iOS Simulator,name=iPhone 11'
+    -destination 'platform=iOS Simulator,name=iPhone 16'
+  )
+    watchos_flags=(
+    -sdk 'watchsimulator'
+    -destination 'platform=watchOS Simulator,name=Apple Watch Series 10 (42mm)'
   )
 fi
 
@@ -167,8 +185,9 @@ tvos_flags=(
   -sdk "appletvsimulator"
   -destination 'platform=tvOS Simulator,name=Apple TV'
 )
-watchos_flags=(
-  -destination 'platform=watchOS Simulator,name=Apple Watch Series 7 (45mm)'
+visionos_flags=(
+  -sdk 'xrsimulator'
+  -destination 'platform=visionOS Simulator,name=Apple Vision Pro'
 )
 catalyst_flags=(
   ARCHS=x86_64 VALID_ARCHS=x86_64 SUPPORTS_MACCATALYST=YES -sdk macosx
@@ -204,6 +223,10 @@ case "$platform" in
 
   watchOS)
     xcb_flags=("${watchos_flags[@]}")
+    ;;
+
+  visionOS)
+    xcb_flags=("${visionos_flags[@]}")
     ;;
 
   catalyst)
@@ -290,20 +313,12 @@ case "$product-$platform-$method" in
         build
     ;;
 
-  Auth-*-xcodebuild)
+  Auth-*-*)
     if check_secrets; then
       RunXcodebuild \
-        -workspace 'FirebaseAuth/Tests/Sample/AuthSample.xcworkspace' \
-        -scheme "Auth_ApiTests" \
+        -project 'FirebaseAuth/Tests/SampleSwift/AuthenticationExample.xcodeproj' \
+        -scheme "$method" \
         "${xcb_flags[@]}" \
-        build \
-        test
-
-      RunXcodebuild \
-        -workspace 'FirebaseAuth/Tests/Sample/AuthSample.xcworkspace' \
-        -scheme "SwiftApiTests" \
-        "${xcb_flags[@]}" \
-        build \
         test
     fi
     ;;
@@ -323,7 +338,6 @@ case "$product-$platform-$method" in
         -workspace 'FirebaseInAppMessaging/Tests/Integration/DefaultUITestApp/InAppMessagingDisplay-Sample.xcworkspace' \
         -scheme 'FiamDisplaySwiftExample' \
         "${xcb_flags[@]}" \
-        build \
         test
     ;;
 
@@ -364,6 +378,7 @@ case "$product-$platform-$method" in
         build
     ;;
 
+  # TODO(#12205) Restore this test to "test" instead of "build"
   Messaging-*-xcodebuild)
     pod_gen FirebaseMessaging.podspec --platforms=ios
 
@@ -372,14 +387,6 @@ case "$product-$platform-$method" in
       AppHost-FirebaseMessaging-Unit-Tests \
       ../../../FirebaseMessaging/Tests/IntegrationTests/Resources/GoogleService-Info.plist
 
-    RunXcodebuild \
-      -workspace 'gen/FirebaseMessaging/FirebaseMessaging.xcworkspace' \
-      -scheme "FirebaseMessaging-Unit-unit" \
-      "${ios_flags[@]}" \
-      "${xcb_flags[@]}" \
-      build \
-      test
-
     if check_secrets; then
       # Integration tests are only run on iOS to minimize flake failures.
       RunXcodebuild \
@@ -387,27 +394,8 @@ case "$product-$platform-$method" in
         -scheme "FirebaseMessaging-Unit-integration" \
         "${ios_flags[@]}" \
         "${xcb_flags[@]}" \
-        build \
-        test
+        build
     fi
-
-    pod_gen FirebaseMessaging.podspec --platforms=macos --clean
-    RunXcodebuild \
-      -workspace 'gen/FirebaseMessaging/FirebaseMessaging.xcworkspace' \
-      -scheme "FirebaseMessaging-Unit-unit" \
-      "${macos_flags[@]}" \
-      "${xcb_flags[@]}" \
-      build \
-      test
-
-    pod_gen FirebaseMessaging.podspec --platforms=tvos --clean
-    RunXcodebuild \
-      -workspace 'gen/FirebaseMessaging/FirebaseMessaging.xcworkspace' \
-      -scheme "FirebaseMessaging-Unit-unit" \
-      "${tvos_flags[@]}" \
-      "${xcb_flags[@]}" \
-      build \
-      test
     ;;
 
   MessagingSample-*-*)
@@ -430,12 +418,16 @@ case "$product-$platform-$method" in
     fi
     ;;
 
+  # TODO: This is actually building for iOS instead of watchOS. Update to use
+  # watchOS xcb_flags along with the watchOS sdk option. Also nanopb and promises
+  # podspecs need minimum version updates.
+
   MessagingSampleStandaloneWatchApp-*-*)
     if check_secrets; then
       RunXcodebuild \
         -workspace 'FirebaseMessaging/Apps/SampleStandaloneWatchApp/SampleStandaloneWatchApp.xcworkspace' \
         -scheme "SampleStandaloneWatchApp Watch App" \
-        "${xcb_flags[@]}" \
+        -destination 'platform=watchOS Simulator,name=Apple Watch Series 7 (45mm)' \
         build
     fi
     ;;
@@ -458,16 +450,6 @@ case "$product-$platform-$method" in
       build
     ;;
 
-  Database-*-unit)
-    pod_gen FirebaseDatabase.podspec --platforms="${gen_platform}"
-    RunXcodebuild \
-      -workspace 'gen/FirebaseDatabase/FirebaseDatabase.xcworkspace' \
-      -scheme "FirebaseDatabase-Unit-unit" \
-      "${xcb_flags[@]}" \
-      build \
-      test
-    ;;
-
   Database-*-integration)
     "${database_emulator}" start
     trap '"${database_emulator}" stop' ERR EXIT
@@ -482,32 +464,32 @@ case "$product-$platform-$method" in
     ;;
 
   RemoteConfig-*-fakeconsole)
-    pod_gen FirebaseRemoteConfigSwift.podspec --platforms="${gen_platform}"
+    pod_gen FirebaseRemoteConfig.podspec --platforms="${gen_platform}"
 
     RunXcodebuild \
-      -workspace 'gen/FirebaseRemoteConfigSwift/FirebaseRemoteConfigSwift.xcworkspace' \
-      -scheme "FirebaseRemoteConfigSwift-Unit-fake-console-tests" \
+      -workspace 'gen/FirebaseRemoteConfig/FirebaseRemoteConfig.xcworkspace' \
+      -scheme "FirebaseRemoteConfig-Unit-fake-console-tests" \
       "${xcb_flags[@]}" \
       build \
       test
     ;;
 
   RemoteConfig-*-integration)
-    pod_gen FirebaseRemoteConfigSwift.podspec --platforms="${gen_platform}"
+    pod_gen FirebaseRemoteConfig.podspec --platforms="${gen_platform}"
 
     # Add GoogleService-Info.plist to generated Test Wrapper App.
-    ruby ./scripts/update_xcode_target.rb gen/FirebaseRemoteConfigSwift/Pods/Pods.xcodeproj \
-      AppHost-FirebaseRemoteConfigSwift-Unit-Tests \
-      ../../../FirebaseRemoteConfigSwift/Tests/SwiftAPI/GoogleService-Info.plist
+    ruby ./scripts/update_xcode_target.rb gen/FirebaseRemoteConfig/Pods/Pods.xcodeproj \
+      AppHost-FirebaseRemoteConfig-Unit-Tests \
+      ../../../FirebaseRemoteConfig/Tests/Swift/SwiftAPI/GoogleService-Info.plist
 
     # Add AccessToken to generated Test Wrapper App.
-    ruby ./scripts/update_xcode_target.rb gen/FirebaseRemoteConfigSwift/Pods/Pods.xcodeproj \
-      AppHost-FirebaseRemoteConfigSwift-Unit-Tests \
-      ../../../FirebaseRemoteConfigSwift/Tests/AccessToken.json
+    ruby ./scripts/update_xcode_target.rb gen/FirebaseRemoteConfig/Pods/Pods.xcodeproj \
+      AppHost-FirebaseRemoteConfig-Unit-Tests \
+      ../../../FirebaseRemoteConfig/Tests/Swift/AccessToken.json
 
     RunXcodebuild \
-      -workspace 'gen/FirebaseRemoteConfigSwift/FirebaseRemoteConfigSwift.xcworkspace' \
-      -scheme "FirebaseRemoteConfigSwift-Unit-swift-api-tests" \
+      -workspace 'gen/FirebaseRemoteConfig/FirebaseRemoteConfig.xcworkspace' \
+      -scheme "FirebaseRemoteConfig-Unit-swift-api-tests" \
       "${xcb_flags[@]}" \
       build \
       test
@@ -517,6 +499,14 @@ case "$product-$platform-$method" in
     RunXcodebuild \
       -workspace 'FirebaseRemoteConfig/Tests/Sample/RemoteConfigSampleApp.xcworkspace' \
       -scheme "RemoteConfigSampleApp" \
+      "${xcb_flags[@]}" \
+      build
+    ;;
+
+  VertexSample-*-*)
+    RunXcodebuild \
+      -project 'FirebaseVertexAI/Sample/VertexAISample.xcodeproj' \
+      -scheme "VertexAISample" \
       "${xcb_flags[@]}" \
       build
     ;;
@@ -557,7 +547,7 @@ case "$product-$platform-$method" in
       test
     ;;
 
-  Storage-*-xcodebuild)
+  StorageSwift-*-xcodebuild)
     pod_gen FirebaseStorage.podspec --platforms=ios
 
     # Add GoogleService-Info.plist to generated Test Wrapper App.
@@ -572,9 +562,17 @@ case "$product-$platform-$method" in
         -scheme "FirebaseStorage-Unit-integration" \
         "${ios_flags[@]}" \
         "${xcb_flags[@]}" \
-        build \
         test
     fi
+    ;;
+
+  StorageObjC-*-xcodebuild)
+    pod_gen FirebaseStorage.podspec --platforms=ios
+
+    # Add GoogleService-Info.plist to generated Test Wrapper App.
+    ruby ./scripts/update_xcode_target.rb gen/FirebaseStorage/Pods/Pods.xcodeproj \
+      AppHost-FirebaseStorage-Unit-Tests \
+      ../../../FirebaseStorage/Tests/Integration/Resources/GoogleService-Info.plist
 
     if check_secrets; then
       # Integration tests are only run on iOS to minimize flake failures.
@@ -583,7 +581,6 @@ case "$product-$platform-$method" in
         -scheme "FirebaseStorage-Unit-ObjCIntegration" \
         "${ios_flags[@]}" \
         "${xcb_flags[@]}" \
-        build \
         test
       fi
     ;;
@@ -603,7 +600,6 @@ case "$product-$platform-$method" in
         -scheme "FirebaseCombineSwift-Unit-integration" \
         "${ios_flags[@]}" \
         "${xcb_flags[@]}" \
-        build \
         test
       fi
     ;;
@@ -698,18 +694,18 @@ case "$product-$platform-$method" in
       build
     ;;
 
-  SwiftPMClientApp-*-xcodebuild)
+  ClientApp-iOS-xcodebuild | ClientApp-iOS13-iOS-xcodebuild)
     RunXcodebuild \
-      -project 'ClientApp/ClientApp.xcodeproj' \
-      -scheme "ClientApp" \
+      -project 'IntegrationTesting/ClientApp/ClientApp.xcodeproj' \
+      -scheme $product \
       "${xcb_flags[@]}" \
       build
     ;;
 
-  CocoaPodsClientApp-iOS-xcodebuild)
+  ClientApp-CocoaPods*-iOS-xcodebuild)
     RunXcodebuild \
-      -workspace 'ClientApp/ClientApp.xcworkspace' \
-      -scheme "ClientApp-CocoaPods" \
+      -workspace 'IntegrationTesting/ClientApp/ClientApp.xcworkspace' \
+      -scheme $product \
       "${xcb_flags[@]}" \
       build
     ;;

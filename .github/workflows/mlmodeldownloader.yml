@@ -17,14 +17,16 @@ concurrency:
 jobs:
   pod-lib-lint:
     if: (github.repository == 'Firebase/firebase-ios-sdk' && github.event_name == 'schedule') || github.event_name == 'pull_request'
-    runs-on: macos-12
     env:
       plist_secret: ${{ secrets.GHASecretsGPGPassphrase1 }}
     strategy:
       matrix:
-        target: [ios, tvos, macos]
+        target: [ios, tvos, macos, watchos]
+        os: [macos-14]
+        xcode: [Xcode_15.2, Xcode_16]
+    runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: ruby/setup-ruby@v1
     - name: Setup Bundler
       run: scripts/setup_bundler.sh
@@ -35,13 +37,14 @@ jobs:
         mkdir FirebaseMLModelDownloader/Tests/Integration/Resources
         scripts/decrypt_gha_secret.sh scripts/gha-encrypted/MLModelDownloader/GoogleService-Info.plist.gpg \
           FirebaseMLModelDownloader/Tests/Integration/Resources/GoogleService-Info.plist "$plist_secret"
+    - name: Xcode
+      run: sudo xcode-select -s /Applications/${{ matrix.xcode }}.app/Contents/Developer
     - name: Build and test
-      # TODO: Disable verbose logging after flaky test investigation.
-      run: ([ -z $plist_secret ] || scripts/third_party/travis/retry.sh scripts/pod_lib_lint.rb FirebaseMLModelDownloader.podspec --verbose --platforms=${{ matrix.target }})
+      run: ([ -z $plist_secret ] || scripts/third_party/travis/retry.sh scripts/pod_lib_lint.rb FirebaseMLModelDownloader.podspec --platforms=${{ matrix.target }})
 
   mlmodeldownloader-cron-only:
     if: github.event_name == 'schedule' && github.repository == 'Firebase/firebase-ios-sdk'
-    runs-on: macos-12
+    runs-on: macos-14
     env:
       plist_secret: ${{ secrets.GHASecretsGPGPassphrase1 }}
     strategy:
@@ -49,7 +52,7 @@ jobs:
         target: [ios, tvos, macos]
     needs: pod-lib-lint
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: ruby/setup-ruby@v1
     - name: Setup Bundler
       run: scripts/setup_bundler.sh
@@ -63,17 +66,68 @@ jobs:
     - name: PodLibLint MLModelDownloader Cron
       run: scripts/third_party/travis/retry.sh scripts/pod_lib_lint.rb FirebaseMLModelDownloader.podspec --platforms=${{ matrix.target }} --use-static-frameworks
 
+  spm-package-resolved:
+    env:
+      FIREBASECI_USE_LATEST_GOOGLEAPPMEASUREMENT: 1
+    runs-on: macos-14
+    outputs:
+      cache_key: ${{ steps.generate_cache_key.outputs.cache_key }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate Swift Package.resolved
+        id: swift_package_resolve
+        run: |
+          swift package resolve
+      - name: Generate cache key
+        id: generate_cache_key
+        run: |
+          cache_key="${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}"
+          echo "cache_key=${cache_key}" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache/save@v4
+        id: cache
+        with:
+          path: .build
+          key: ${{ steps.generate_cache_key.outputs.cache_key }}
+
   spm:
     if: (github.repository == 'Firebase/firebase-ios-sdk' && github.event_name == 'schedule') || github.event_name == 'pull_request'
-    runs-on: macos-12
+    needs: [spm-package-resolved]
     strategy:
       matrix:
-        target: [iOS, tvOS, macOS, catalyst, watchOS]
+        include:
+          - os: macos-13
+            xcode: Xcode_15.2
+            target: iOS
+          - os: macos-14
+            xcode: Xcode_15.4
+            target: iOS
+          - os: macos-15
+            xcode: Xcode_16
+            target: iOS
+          - os: macos-15
+            xcode: Xcode_16
+            target: tvOS
+          - os: macos-15
+            xcode: Xcode_16
+            target: macOS
+          - os: macos-15
+            xcode: Xcode_16
+            target: watchOS
+          - os: macos-15
+            xcode: Xcode_16
+            target: catalyst
+          - os: macos-15
+            xcode: Xcode_16
+            target: visionOS
+    runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
-    - uses: mikehardy/buildcache-action@c87cea0ccd718971d6cc39e672c4f26815b6c126
+    - uses: actions/checkout@v4
+    - uses: actions/cache/restore@v4
       with:
-        cache_key: ${{ matrix.os }}
+        path: .build
+        key: ${{needs.spm-package-resolved.outputs.cache_key}}
+    - name: Xcode
+      run: sudo xcode-select -s /Applications/${{ matrix.xcode }}.app/Contents/Developer
     - name: Initialize xcodebuild
       run: scripts/setup_spm_tests.sh
     - name: Unit Tests
@@ -81,12 +135,12 @@ jobs:
 
   catalyst:
     if: (github.repository == 'Firebase/firebase-ios-sdk' && github.event_name == 'schedule') || github.event_name == 'pull_request'
-    runs-on: macos-12
+    runs-on: macos-14
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: mikehardy/buildcache-action@c87cea0ccd718971d6cc39e672c4f26815b6c126
       with:
-        cache_key: ${{ matrix.os }}
+        cache_key: catalyst${{ matrix.os }}
     - uses: ruby/setup-ruby@v1
     - name: Setup Bundler
       run: scripts/setup_bundler.sh
@@ -98,12 +152,12 @@ jobs:
     if: github.repository == 'Firebase/firebase-ios-sdk' && (github.event_name == 'schedule' || github.event_name == 'pull_request')
     env:
       plist_secret: ${{ secrets.GHASecretsGPGPassphrase1 }}
-    runs-on: macos-12
+    runs-on: macos-14
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: mikehardy/buildcache-action@c87cea0ccd718971d6cc39e672c4f26815b6c126
       with:
-        cache_key: ${{ matrix.os }}
+        cache_key: build-test${{ matrix.os }}
     - uses: ruby/setup-ruby@v1
     - name: Setup Bundler
       run: scripts/setup_bundler.sh

@@ -314,9 +314,10 @@ This test flakes frequently on the emulator on travis and almost always on GHA w
           ios - sdk / firebase - ios -
           sdk / Example / Database / Tests / Helpers /
               FEventTester
-                  .m : 123 because it was raised inside test case -[FEventTester(null)] which has no
-                      associated XCTestRun object.This may happen when test cases are
-                          constructed and invoked independently of standard XCTest infrastructure,
+                  .m : 123 because it was raised inside test case -
+              [FEventTester(
+                  null)] which has no associated XCTestRun object.This may happen when test cases
+                  are constructed and invoked independently of standard XCTest infrastructure,
       or when the test has already finished
                       ." - Expected http://localhost:9000/-M8IJYWb68MuqQKKz2IY/a aa (0) to match "
                        "http://localhost:9000/-M8IJYWb68MuqQKKz2IY/a (null) (4)' from "
@@ -1189,10 +1190,10 @@ XCTAssertTrue([target isEqualTo:recvd], @"Expected %@ to match %@", target, recv
   }];
 
   NSArray *expectedValues = @[ @5, @5 ];
-  NSArray *expectedPriorites = @[ [NSNull null], @10 ];
+  NSArray *expectedPriorities = @[ [NSNull null], @10 ];
   XCTAssertTrue([values isEqualToArray:expectedValues],
                 @"Expected both listeners to get 5, got %@ instead", values);
-  XCTAssertTrue([priorities isEqualToArray:expectedPriorites],
+  XCTAssertTrue([priorities isEqualToArray:expectedPriorities],
                 @"The first listener should have missed the priority, got %@ instead", priorities);
 }
 
@@ -2196,7 +2197,9 @@ XCTAssertTrue([target isEqualTo:recvd], @"Expected %@ to match %@", target, recv
   }];
 }
 
-- (void)testUpdateReplacesChildrenAndIsNotRecursive {
+// TODO: On arm hardware Macs, the following test hangs with the emulator, but passes with a real
+// project.
+- (void)SKIPtestUpdateReplacesChildrenAndIsNotRecursive {
   FTupleFirebase *refs = [FTestHelpers getRandomNodePair];
   FIRDatabaseReference *reader = refs.one;
   FIRDatabaseReference *writer = refs.two;

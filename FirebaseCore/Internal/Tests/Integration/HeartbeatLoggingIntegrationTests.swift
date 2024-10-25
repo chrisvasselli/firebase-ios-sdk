@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import XCTest
 @testable import FirebaseCoreInternal
+import XCTest
 
 class HeartbeatLoggingIntegrationTests: XCTestCase {
   // 2021-11-01 @ 00:00:00 (EST)
@@ -50,6 +50,38 @@ class HeartbeatLoggingIntegrationTests: XCTestCase {
       }
       """
     )
+  }
+
+  func testLogAndFlushAsync() throws {
+    // Given
+    let heartbeatController = HeartbeatController(id: #function)
+    let expectedDate = HeartbeatsPayload.dateFormatter.string(from: Date())
+    let expectation = self.expectation(description: #function)
+    // When
+    heartbeatController.log("dummy_agent")
+    heartbeatController.flushAsync { payload in
+      // Then
+      do {
+        try HeartbeatLoggingTestUtils.assertEqualPayloadStrings(
+          payload.headerValue(),
+          """
+          {
+            "version": 2,
+            "heartbeats": [
+              {
+                "agent": "dummy_agent",
+                "dates": ["\(expectedDate)"]
+              }
+            ]
+          }
+          """
+        )
+        expectation.fulfill()
+      } catch {
+        XCTFail("Unexpected error: \(error)")
+      }
+    }
+    waitForExpectations(timeout: 1.0)
   }
 
   /// This test may flake if it is executed during the transition from one day to the next.

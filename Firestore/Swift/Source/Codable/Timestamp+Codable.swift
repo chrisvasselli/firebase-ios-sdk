@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import FirebaseFirestore
+@_exported import class FirebaseCore.Timestamp
 
 /**
  * A protocol describing the encodable properties of a Timestamp.
@@ -59,4 +59,4 @@ extension CodableTimestamp {
 }
 
 /** Extends Timestamp to conform to Codable. */
-extension Timestamp: CodableTimestamp {}
+extension FirebaseCore.Timestamp: FirebaseFirestore.CodableTimestamp {}

@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
 import Combine
-import XCTest
 @testable import FirebaseStorage
+import Foundation
+import XCTest
 
 class StorageReferenceTests: XCTestCase {
+  let expectationTimeout: TimeInterval = 2
   override class func setUp() {
     FirebaseApp.configureForTests()
   }

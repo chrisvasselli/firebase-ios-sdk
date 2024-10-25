@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Foundation
-import FirebaseCore
+import Combine
 import FirebaseAuth
 import FirebaseCombineSwift
-import Combine
+import FirebaseCore
+import Foundation
 import XCTest
 
 class AuthStateDidChangePublisherTests: XCTestCase {
@@ -171,7 +171,7 @@ class AuthStateDidChangePublisherTests: XCTestCase {
       .sink { user in
         print("Running on the main thread? \(Thread.isMainThread)")
 
-        if let user = user, user.isAnonymous {
+        if let user, user.isAnonymous {
           signedInExpectation.fulfill()
         }
       }
@@ -191,7 +191,7 @@ class AuthStateDidChangePublisherTests: XCTestCase {
 
     let cancellable = Auth.auth().authStateDidChangePublisher()
       .sink { user in
-        if let user = user, user.isAnonymous {
+        if let user, user.isAnonymous {
           expect.fulfill()
         }
       }
@@ -225,7 +225,7 @@ class AuthStateDidChangePublisherTests: XCTestCase {
             expect.fulfill()
           }
         } else {
-          if let user = user, user.isAnonymous {
+          if let user, user.isAnonymous {
             expect.fulfill()
           }
         }
@@ -261,7 +261,7 @@ class AuthStateDidChangePublisherTests: XCTestCase {
             expect.fulfill()
           }
         } else {
-          if let user = user, user.isAnonymous {
+          if let user, user.isAnonymous {
             expect.fulfill()
           }
         }
