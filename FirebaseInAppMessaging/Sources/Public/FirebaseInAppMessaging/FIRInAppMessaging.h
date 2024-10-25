@@ -85,6 +85,8 @@ NS_SWIFT_NAME(InAppMessaging)
  */
 - (void)triggerEvent:(NSString *)eventName;
 
+@property(nonatomic) NSDictionary<NSString*,NSString*>* nihongo_variables;
+
 /**
  * This delegate should be set on the app side to receive message lifecycle events.
  */
