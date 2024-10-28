@@ -21,6 +21,7 @@
 
 #import "FirebaseInAppMessaging/Sources/DefaultUI/FIRCore+InAppMessagingDisplay.h"
 #import "FirebaseInAppMessaging/Sources/DefaultUI/Modal/FIRIAMModalViewController.h"
+#import "FirebaseInAppMessaging/Sources/Public/FirebaseInAppMessaging/FIRInAppMessaging.h"
 
 @interface FIRIAMModalViewController ()
 
@@ -122,9 +123,13 @@ static CGFloat LandScapePaddingBetweenImageAndTextColumn = 24;
   self.messageCardView.layer.cornerRadius = 4;
 
   // populating values for display elements
+  
+  NSString* title = [self nihongo_applyVariablesTo:self.modalDisplayMessage.title];
+  NSString* body = [self nihongo_applyVariablesTo:[self.modalDisplayMessage.bodyText stringByReplacingOccurrencesOfString:@"<br>" withString:@"\n"]];
+  NSString* actionButtonText = [self nihongo_applyVariablesTo:self.modalDisplayMessage.actionButton.buttonText];
 
-  self.titleLabel.text = self.modalDisplayMessage.title;
-  self.bodyTextView.text = [self.modalDisplayMessage.bodyText stringByReplacingOccurrencesOfString:@"<br>" withString:@"\n"];
+  self.titleLabel.text = title;
+  self.bodyTextView.text = body;
 
   if (self.modalDisplayMessage.imageData) {
     [self.imageView
@@ -142,7 +147,7 @@ static CGFloat LandScapePaddingBetweenImageAndTextColumn = 24;
   self.bodyTextView.selectable = NO;
 
   if (self.modalDisplayMessage.actionButton.buttonText.length != 0) {
-    [self.actionButton setTitle:self.modalDisplayMessage.actionButton.buttonText
+    [self.actionButton setTitle:actionButtonText
                        forState:UIControlStateNormal];
     self.actionButton.backgroundColor = self.modalDisplayMessage.actionButton.buttonBackgroundColor;
     [self.actionButton setTitleColor:self.modalDisplayMessage.actionButton.buttonTextColor
@@ -172,6 +177,20 @@ static CGFloat LandScapePaddingBetweenImageAndTextColumn = 24;
     self.titleLabel, self.imageView, self.bodyTextView, self.actionButton, self.closeButton,
     self.messageCardView
   ];
+}
+
+- (NSString *) nihongo_applyVariablesTo: (NSString*) text
+{
+    NSDictionary<NSString*, NSString*>* variables = [FIRInAppMessaging inAppMessaging].nihongo_variables;
+    NSString* result = [text copy];
+    for (NSString* key in variables)
+    {
+        NSString* value = variables[key];
+        NSString* prefixedKey = [NSString stringWithFormat:@"$%@", key];
+        result = [result stringByReplacingOccurrencesOfString:prefixedKey withString:value];
+    }
+    
+    return result;
 }
 
 // for text display UIview, which could be a UILabel or UITextView, decide the fit height under a

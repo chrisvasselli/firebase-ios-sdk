@@ -27,7 +27,6 @@
 #import "FirebaseInAppMessaging/Sources/Private/DisplayTrigger/FIRIAMDisplayTriggerDefinition.h"
 #import "FirebaseInAppMessaging/Sources/Private/Util/FIRIAMTimeFetcher.h"
 #import "FirebaseInAppMessaging/Sources/Util/UIColor+FIRIAMHexString.h"
-#import "FirebaseInAppMessaging/Sources/Public/FirebaseInAppMessaging/FIRInAppMessaging.h"
 
 #import "FirebaseABTesting/Sources/Private/ABTExperimentPayload.h"
 
@@ -346,11 +345,6 @@ NS_EXTENSION_UNAVAILABLE("Firebase In App Messaging is not supported for iOS ext
     actionButtonText = [self nihongo_overrideForField:@"actionButtonText" inDataBundle:dataBundle] ?: actionButtonText;
     secondaryActionButtonText = [self nihongo_overrideForField:@"secondaryActionButtonText" inDataBundle:dataBundle] ?: secondaryActionButtonText;
       
-    title = [self nihongo_applyVariablesTo:title];
-    body = [self nihongo_applyVariablesTo:body];
-    actionButtonText = [self nihongo_applyVariablesTo:actionButtonText];
-    secondaryActionButtonText = [self nihongo_applyVariablesTo:secondaryActionButtonText];
-
     FIRIAMMessageContentDataWithImageURL *msgData =
         [[FIRIAMMessageContentDataWithImageURL alloc] initWithMessageTitle:title
                                                                messageBody:body
@@ -388,20 +382,6 @@ NS_EXTENSION_UNAVAILABLE("Firebase In App Messaging is not supported for iOS ext
                   messageNode, e);
     return nil;
   }
-}
-
-- (NSString *) nihongo_applyVariablesTo: (NSString*) text
-{
-    NSDictionary<NSString*, NSString*>* variables = [FIRInAppMessaging inAppMessaging].nihongo_variables;
-    NSString* result = [text copy];
-    for (NSString* key in variables)
-    {
-        NSString* value = variables[key];
-        NSString* prefixedKey = [NSString stringWithFormat:@"$%@", key];
-        result = [result stringByReplacingOccurrencesOfString:prefixedKey withString:value];
-    }
-    
-    return result;
 }
 
 - (nullable NSString *) nihongo_overrideForField: (NSString*) field inDataBundle: (nullable NSDictionary*) dataBundle
