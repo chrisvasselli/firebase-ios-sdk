@@ -183,7 +183,15 @@ static CGFloat LandScapePaddingBetweenImageAndTextColumn = 24;
 {
     NSDictionary<NSString*, NSString*>* variables = [FIRInAppMessaging inAppMessaging].nihongo_variables;
     NSString* result = [text copy];
-    for (NSString* key in variables)
+  
+  NSArray<NSString*>* sortedByLength = [variables.allKeys sortedArrayUsingComparator:^(NSString* a,
+                                                                                                                                                          NSString* b) {
+    if (a.length > b.length) return NSOrderedAscending;
+    else if (a.length < b.length ) return NSOrderedDescending;
+    else return NSOrderedSame;
+  }];
+  
+  for (NSString* key in sortedByLength)
     {
         NSString* value = variables[key];
         NSString* prefixedKey = [NSString stringWithFormat:@"$%@", key];
